@@ -1,6 +1,6 @@
 const qsOptions = require('query-string').parse(location.search);
-const SpaaaceClientEngine = require('../client/SpaaaceClientEngine');
-const SpaaaceGameEngine = require('../common/SpaaaceGameEngine');
+const MMORPGClientEngine = require('../client/MMORPGClientEngine');
+const MMORPGGameEngine = require('../common/MMORPGGameEngine');
 const SimplePhysicsEngine = require('incheon').physics.SimplePhysicsEngine;
 require('../../assets/sass/main.scss');
 
@@ -11,7 +11,7 @@ const defaults = {
     delayInputCount: 3,
     clientIDSpace: 1000000,
     syncOptions: {
-        sync: qsOptions.sync || 'extrapolate',
+        sync: qsOptions.sync || 'interpolate',
         localObjBending: 0.6,
         remoteObjBending: 0.6
     }
@@ -21,7 +21,7 @@ let options = Object.assign(defaults, qsOptions);
 // create a client engine and a game engine
 const physicsEngine = new SimplePhysicsEngine({ collisionOptions: { COLLISION_DISTANCE: 25 } } );
 const gameOptions = Object.assign({ physicsEngine }, options);
-const gameEngine = new SpaaaceGameEngine(gameOptions);
-const clientEngine = new SpaaaceClientEngine(gameEngine, options);
+const gameEngine = new MMORPGGameEngine(gameOptions);
+const clientEngine = new MMORPGClientEngine(gameEngine, options);
 
 clientEngine.start();

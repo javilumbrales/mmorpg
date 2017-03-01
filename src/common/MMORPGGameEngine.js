@@ -2,10 +2,10 @@
 
 const GameEngine = require('incheon').GameEngine;
 const Missile= require('./Missile');
-const Ship = require('./Ship');
+const Character = require('./Character');
 const Timer = require('./Timer');
 
-class SpaaaceGameEngine extends GameEngine {
+class MMORPGGameEngine extends GameEngine {
 
     start() {
         let that = this;
@@ -19,21 +19,21 @@ class SpaaaceGameEngine extends GameEngine {
 
         this.worldSettings = {
             worldWrap: true,
-            width: 3000,
-            height: 3000
+            width: 500,
+            height: 500
         };
 
         this.on('collisionStart', function(e) {
             let collisionObjects = Object.keys(e).map(k => e[k]);
-            let ship = collisionObjects.find(o => o.class === Ship);
+            let character = collisionObjects.find(o => o.class === Character);
             let missile = collisionObjects.find(o => o.class === Missile);
 
-            if (!ship || !missile)
+            if (!character || !missile)
                 return;
 
-            if (missile.shipOwnerId !== ship.id) {
+            if (missile.shipOwnerId !== character.id) {
                 that.destroyMissile(missile.id);
-                that.emit('missileHit', { missile, ship });
+                that.emit('missileHit', { missile, character });
             }
         });
 
@@ -56,28 +56,29 @@ class SpaaaceGameEngine extends GameEngine {
         super.processInput(inputData, playerId);
 
         // get the player ship tied to the player socket
-        let playerShip;
+        let playerCharacter;
 
         for (let objId in this.world.objects) {
             let o = this.world.objects[objId];
-            if (o.playerId == playerId && o.class == Ship) {
-                playerShip = o;
+            if (o.playerId == playerId && o.class == Character) {
+                playerCharacter = o;
                 break;
             }
         }
 
-        if (playerShip) {
+        if (playerCharacter) {
             if (inputData.input == 'up') {
-                playerShip.isAccelerating = true;
-                playerShip.showThrust = 5; // show thrust for next steps.
+                //playerCharacter.isAccelerating = true;
+                playerCharacter.y += 1;
             } else if (inputData.input == 'right') {
-                playerShip.isRotatingRight = true;
+                //playerCharacter.y += 5;
             } else if (inputData.input == 'left') {
-                playerShip.isRotatingLeft = true;
+                //playerCharacter.z += 5;
             } else if (inputData.input == 'space') {
-                this.makeMissile(playerShip, inputData.messageIndex);
+                this.makeMissile(playerCharacter, inputData.messageIndex);
                 this.emit('fireMissile');
             }
+            console.log(playerCharacter.x, playerCharacter.y);
         }
     };
 
@@ -85,17 +86,17 @@ class SpaaaceGameEngine extends GameEngine {
      * Makes a new ship, places it randomly and adds it to the game world
      * @return {Ship} the added Ship object
      */
-    makeShip(playerId) {
-        let newShipX = Math.floor(Math.random()*(this.worldSettings.width-200)) + 200;
-        let newShipY = Math.floor(Math.random()*(this.worldSettings.height-200)) + 200;
+    makeCharacter(playerId) {
+        let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
+        let newCharacterY = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
 
         // todo playerId should be called ownerId
-        let ship = new Ship(++this.world.idCount, this, newShipX, newShipY);
-        ship.playerId = playerId;
-        this.addObjectToWorld(ship);
-        console.log(`ship added: ${ship.toString()}`);
+        let character = new Character(++this.world.idCount, this, newCharacterX, newCharacterY);
+        character.playerId = playerId;
+        this.addObjectToWorld(character);
+        console.log(`Character added: ${character.toString()}`);
 
-        return ship;
+        return character;
     };
 
     makeMissile(playerShip, inputId) {
@@ -132,4 +133,4 @@ class SpaaaceGameEngine extends GameEngine {
     }
 }
 
-module.exports = SpaaaceGameEngine;
+module.exports = MMORPGGameEngine;

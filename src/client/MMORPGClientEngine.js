@@ -1,19 +1,19 @@
 const Howler = require('howler'); // eslint-disable-line no-unused-vars
 const ClientEngine = require('incheon').ClientEngine;
-const SpaaaceRenderer = require('../client/SpaaaceRenderer');
+const MMORPGRenderer = require('../client/MMORPGRenderer');
 const MobileControls = require('../client/MobileControls');
 const KeyboardControls = require('../client/KeyboardControls');
-const Ship = require('../common/Ship');
+const Character = require('../common/Character');
 const Utils = require('./../common/Utils');
 
-class SpaaaceClientEngine extends ClientEngine {
+class MMORPGClientEngine extends ClientEngine {
     constructor(gameEngine, options) {
         super(gameEngine, options);
 
         // initialize renderer
-        this.renderer = new SpaaaceRenderer(gameEngine, this);
+        this.renderer = new MMORPGRenderer(gameEngine, this);
 
-        this.serializer.registerClass(require('../common/Ship'));
+        this.serializer.registerClass(require('../common/Character'));
         this.serializer.registerClass(require('../common/Missile'));
 
         this.gameEngine.on('client__preStep', this.preStep.bind(this));
@@ -25,7 +25,7 @@ class SpaaaceClientEngine extends ClientEngine {
 
         // handle gui for game condition
         this.gameEngine.on('objectDestroyed', (obj) => {
-            if (obj.class == Ship && this.isOwnedByPlayer(obj)) {
+            if (obj.class == Character && this.isOwnedByPlayer(obj)) {
                 document.body.classList.add('lostGame');
                 document.querySelector('#tryAgain').disabled = false;
             }
@@ -76,7 +76,7 @@ class SpaaaceClientEngine extends ClientEngine {
         this.gameEngine.on('fireMissile', () => { this.sounds.fireMissile.play(); });
         this.gameEngine.on('missileHit', () => {
             // don't play explosion sound if the player is not in game
-            if (this.renderer.playerShip) {
+            if (this.renderer.playerCharacter) {
                 this.sounds.missileHit.play();
             }
         });
@@ -125,4 +125,4 @@ class SpaaaceClientEngine extends ClientEngine {
 
 }
 
-module.exports = SpaaaceClientEngine;
+module.exports = MMORPGClientEngine;

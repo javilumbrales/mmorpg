@@ -3,20 +3,21 @@
 const ServerEngine = require('incheon').ServerEngine;
 const nameGenerator = require('./NameGenerator');
 
-class SpaaaceServerEngine extends ServerEngine {
+class MMORPGServerEngine extends ServerEngine {
     constructor(io, gameEngine, inputOptions) {
         super(io, gameEngine, inputOptions);
 
         this.serializer.registerClass(require('../common/Missile'));
-        this.serializer.registerClass(require('../common/Ship'));
+        this.serializer.registerClass(require('../common/Character'));
 
         this.scoreData = {};
     }
 
     start() {
         super.start();
-        for (let x = 0; x < 3; x++) this.makeBot();
+        //for (let x = 0; x < 3; x++) this.makeBot();
 
+        /*
         this.gameEngine.on('missileHit', (e) => {
             // add kills
             if (this.scoreData[e.missile.shipOwnerId]) this.scoreData[e.missile.shipOwnerId].kills++;
@@ -30,15 +31,16 @@ class SpaaaceServerEngine extends ServerEngine {
                 setTimeout(() => this.makeBot(), 5000);
             }
         });
+        */
     }
 
     onPlayerConnected(socket) {
         super.onPlayerConnected(socket);
 
-        let makePlayerShip = () => {
-            let ship = this.gameEngine.makeShip(socket.playerId);
+        let makePlayerCharacter = () => {
+            let character = this.gameEngine.makeCharacter(socket.playerId);
 
-            this.scoreData[ship.id] = {
+            this.scoreData[character.id] = {
                 kills: 0,
                 name: nameGenerator('general')
             };
@@ -46,7 +48,7 @@ class SpaaaceServerEngine extends ServerEngine {
         };
 
         // handle client restart requests
-        socket.on('requestRestart', makePlayerShip);
+        socket.on('requestRestart', makePlayerCharacter);
     }
 
     onPlayerDisconnected(socketId, playerId) {
@@ -68,7 +70,7 @@ class SpaaaceServerEngine extends ServerEngine {
     }
 
     makeBot() {
-        let bot = this.gameEngine.makeShip(0);
+        let bot = this.gameEngine.makeCharacter(0);
         bot.attachAI();
 
         this.scoreData[bot.id] = {
@@ -88,4 +90,4 @@ class SpaaaceServerEngine extends ServerEngine {
     }
 }
 
-module.exports = SpaaaceServerEngine;
+module.exports = MMORPGServerEngine;

@@ -1,17 +1,17 @@
 'use strict';
 
-const PIXI = require('pixi.js');
+const BABYLON = require('babylonjs');
 const Renderer = require('incheon').render.Renderer;
 const Utils= require('./../common/Utils');
 
 const Missile = require('../common/Missile');
-const Ship = require('../common/Ship');
-const ShipActor = require('./ShipActor');
+const Character = require('../common/Character');
+const CharacterActor = require('./CharacterActor');
 
 /**
- * Renderer for the Spaaace client - based on Pixi.js
+ * Renderer for the MMORPG (Babylon.js)
  */
-class SpaaaceRenderer extends Renderer {
+class MMORPGRenderer extends Renderer {
 
     get ASSETPATHS(){
         return {
@@ -40,127 +40,100 @@ class SpaaaceRenderer extends Renderer {
     }
 
     init() {
-        this.viewportWidth = window.innerWidth;
-        this.viewportHeight = window.innerHeight;
 
-        this.stage = new PIXI.Container();
-        this.layer1 = new PIXI.Container();
-        this.layer2 = new PIXI.Container();
-
-        this.stage.addChild(this.layer1, this.layer2);
-
-        if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') {
-            this.onDOMLoaded();
-        } else {
+        //if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') {
+            //this.onDOMLoaded();
+        //} else {
             document.addEventListener('DOMContentLoaded', ()=>{
                 this.onDOMLoaded();
             });
-        }
+        //}
 
         return new Promise((resolve, reject)=>{
-            PIXI.loader.add(Object.keys(this.ASSETPATHS).map((x)=>{
-                return{
-                    name: x,
-                    url: this.assetPathPrefix + this.ASSETPATHS[x]
-                };
-            }))
-            .load(() => {
-                this.isReady = true;
-                this.setupStage();
+            //PIXI.loader.add(Object.keys(this.ASSETPATHS).map((x)=>{
+                //return{
+                    //name: x,
+                    //url: this.assetPathPrefix + this.ASSETPATHS[x]
+                //};
+            //}))
+            //.load(() => {
+                //this.isReady = true;
+                //this.initScene();
+                //
+            setTimeout(function(){
                 this.gameEngine.emit('renderer.ready');
 
                 if (Utils.isTouchDevice()){
-                    document.body.classList.add('touch');
+                  document.body.classList.add('touch');
                 } else if (isMacintosh()) {
-                    document.body.classList.add('mac');
+                  document.body.classList.add('mac');
                 } else if (isWindows()) {
-                    document.body.classList.add('pc');
+                  document.body.classList.add('pc');
                 }
 
                 resolve();
-            });
+            }.bind(this), 500);
+            //});
         });
     }
 
     onDOMLoaded(){
-        this.renderer = PIXI.autoDetectRenderer(this.viewportWidth, this.viewportHeight);
-        document.body.querySelector('.pixiContainer').appendChild(this.renderer.view);
-    }
-
-    setupStage() {
-        window.addEventListener('resize', ()=>{ this.setRendererSize(); });
-
-        this.lookingAt = { x: 0, y: 0 };
-        this.camera = new PIXI.Container();
-        this.camera.addChild(this.layer1, this.layer2);
-
-        // parallax background
-        this.bg1 = new PIXI.extras.TilingSprite(PIXI.loader.resources.bg1.texture,
-                this.viewportWidth, this.viewportHeight);
-        this.bg2 = new PIXI.extras.TilingSprite(PIXI.loader.resources.bg2.texture,
-            this.viewportWidth, this.viewportHeight);
-        this.bg3 = new PIXI.extras.TilingSprite(PIXI.loader.resources.bg3.texture,
-            this.viewportWidth, this.viewportHeight);
-        this.bg4 = new PIXI.extras.TilingSprite(PIXI.loader.resources.bg4.texture,
-            this.viewportWidth, this.viewportHeight);
-
-        this.bg3.blendMode = PIXI.BLEND_MODES.ADD;
-        this.bg4.blendMode = PIXI.BLEND_MODES.ADD;
-        this.bg4.alpha = 0.6;
-
-        this.stage.addChild(this.bg1, this.bg2, this.bg3, this.bg4);
-        this.stage.addChild(this.camera);
-
-        // this.debug= new PIXI.Graphics();
-        // this.camera.addChild(this.debug);
-
-        // this.debugText = new PIXI.Text('DEBUG', {fontFamily:"arial", fontSize: "100px", fill:"white"});
-        // this.debugText.anchor.set(0.5, 0.5);
-        // this.debugText.x = this.gameEngine.worldSettings.width/2;
-        // this.debugText.y = this.gameEngine.worldSettings.height/2;
-        // this.camera.addChild(this.debugText);
-
-        this.elapsedTime = Date.now();
-        // debug
-        if ('showworldbounds' in Utils.getUrlVars()) {
-            let graphics = new PIXI.Graphics();
-            graphics.beginFill(0xFFFFFF);
-            graphics.alpha = 0.1;
-            graphics.drawRect(0, 0, this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height);
-            this.camera.addChild(graphics);
+        if (BABYLON.Engine.isSupported()) {
+            this.initScene();
         }
-
     }
 
-    setRendererSize() {
-        this.viewportWidth = window.innerWidth;
-        this.viewportHeight = window.innerHeight;
+    initScene() {
+        // Get canvas
+        this.canvas = document.querySelector('#renderCanvas');
+console.log(this.canvas);
+        // Create babylon engine
+        this.engine = new BABYLON.Engine(this.canvas, true);
+        this.engine.enableOfflineSupport = false;
 
-        this.bg1.width = this.viewportWidth;
-        this.bg1.height = this.viewportHeight;
-        this.bg2.width = this.viewportWidth;
-        this.bg2.height = this.viewportHeight;
-        this.bg3.width = this.viewportWidth;
-        this.bg3.height = this.viewportHeight;
-        this.bg4.width = this.viewportWidth;
-        this.bg4.height = this.viewportHeight;
+        // Create scene
+        this.scene = new BABYLON.Scene(this.engine);
+        this.scene.collisionsEnabled = true;
 
-        this.renderer.resize(this.viewportWidth, this.viewportHeight);
+
+        // Create the camera
+        //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);
+        //camera.setTarget(new BABYLON.Vector3(0,0,10));
+        let camera = new BABYLON.ArcRotateCamera("CameraRotate", -Math.PI/2, Math.PI/2.2, 12, new BABYLON.Vector3(0, 4.8, 0), this.scene);
+        camera.wheelPrecision = 15;
+        camera.attachControl(this.canvas);
+
+        this.camera = camera;
+
+        // Create light
+        let light = new BABYLON.PointLight("light", new BABYLON.Vector3(0,5,-5), this.scene);
+
+        let ground = BABYLON.Mesh.CreateGround('ground1', this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 2, this.scene);
+        var groundMaterial = new BABYLON.StandardMaterial("groundMat", this.scene);
+        groundMaterial.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.7);
+        ground.material = groundMaterial;
+        ground.checkCollisions = true;
+
+
+        this.isReady = true;
+        //initGame();
+
     }
 
     draw() {
         super.draw();
-
-        let now = Date.now();
-
         if (!this.isReady) return; // assets might not have been loaded yet
-        let worldWidth = this.gameEngine.worldSettings.width;
-        let worldHeight = this.gameEngine.worldSettings.height;
 
-        let viewportSeesRightBound = this.camera.x < this.viewportWidth - worldWidth;
-        let viewportSeesLeftBound = this.camera.x > 0;
-        let viewportSeesTopBound = this.camera.y > 0;
-        let viewportSeesBottomBound = this.camera.y < this.viewportHeight - worldHeight;
+
+        //this.engine.runRenderLoop(function () {
+            this.scene.render();
+        //}.bind(this));
+        //
+        if (this.playerCharacter) {
+            //meshPlayer.rotation.y = 4.69 - cameraArcRotative[0].alpha;
+            this.camera.target.x = parseFloat(this.playerCharacter.position.x);
+            this.camera.target.z = parseFloat(this.playerCharacter.position.z);
+        }
 
         for (let objId of Object.keys(this.sprites)) {
             let objData = this.gameEngine.world.objects[objId];
@@ -169,130 +142,55 @@ class SpaaaceRenderer extends Renderer {
             if (objData) {
 
                 // if the object requests a "showThrust" then invoke it in the actor
-                if ((sprite !== this.playerShip) && sprite.actor) {
-                    sprite.actor.thrustEmitter.emit = !!objData.showThrust;
+                if ((sprite !== this.playerCharacter) && sprite.actor) {
+                    //sprite.actor.thrustEmitter.emit = !!objData.showThrust;
                 }
-                
-                if (objData.class == Ship && sprite != this.playerShip) {
+
+                if (objData.class == Character && sprite != this.playerCharacter) {
                     this.updateOffscreenIndicator(objData);
                 }
 
                 sprite.x = objData.x;
                 sprite.y = objData.y;
 
-                if (objData.class == Ship){
-                    sprite.actor.shipContainerSprite.rotation = this.gameEngine.world.objects[objId].angle * Math.PI/180;
-                } else{
-                    sprite.rotation = this.gameEngine.world.objects[objId].angle * Math.PI/180;
-                }
 
-                // make the wraparound seamless for objects other than the player ship
-                if (sprite != this.playerShip && viewportSeesLeftBound && objData.x > this.viewportWidth - this.camera.x) {
-                    sprite.x = objData.x - worldWidth;
-                }
-                if (sprite != this.playerShip && viewportSeesRightBound && objData.x < -this.camera.x) {
-                    sprite.x = objData.x + worldWidth;
-                }
-                if (sprite != this.playerShip && viewportSeesTopBound && objData.y > this.viewportHeight - this.camera.y) {
-                    sprite.y = objData.y - worldHeight;
-                }
-                if (sprite != this.playerShip && viewportSeesBottomBound && objData.y < -this.camera.y) {
-                    sprite.y = objData.y + worldHeight;
-                }
+                //// make the wraparound seamless for objects other than the player ship
+                //if (sprite != this.playerCharacter && viewportSeesLeftBound && objData.x > this.viewportWidth - this.camera.x) {
+                    //sprite.x = objData.x - worldWidth;
+                //}
+                //if (sprite != this.playerCharacter && viewportSeesRightBound && objData.x < -this.camera.x) {
+                    //sprite.x = objData.x + worldWidth;
+                //}
+                //if (sprite != this.playerCharacter && viewportSeesTopBound && objData.y > this.viewportHeight - this.camera.y) {
+                    //sprite.y = objData.y - worldHeight;
+                //}
+                //if (sprite != this.playerCharacter && viewportSeesBottomBound && objData.y < -this.camera.y) {
+                    //sprite.y = objData.y + worldHeight;
+                //}
             }
 
             if (sprite) {
-                // object is either a Pixi sprite or an Actor. Actors have renderSteps
                 if (sprite.actor && sprite.actor.renderStep) {
-                    sprite.actor.renderStep(now - this.elapsedTime);
+                    sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
                 }
             }
 
             // this.emit("postDraw");
         }
 
-        let cameraTarget;
-        if (this.playerShip) {
-            cameraTarget = this.playerShip;
-            // this.cameraRoam = false;
-        } else if (!this.gameStarted && !cameraTarget) {
-
-            // calculate centroid
-            cameraTarget = getCentroid(this.gameEngine.world.objects);
-            this.cameraRoam = true;
-        }
-
-        if (cameraTarget) {
-            // let bgOffsetX = -this.bgPhaseX * worldWidth - cameraTarget.x;
-            // let bgOffsetY = -this.bgPhaseY * worldHeight - cameraTarget.y;
-
-            // 'cameraroam' in Utils.getUrlVars()
-            if (this.cameraRoam) {
-                let lookingAtDeltaX = cameraTarget.x - this.lookingAt.x;
-                let lookingAtDeltaY = cameraTarget.y - this.lookingAt.y;
-                let cameraTempTargetX;
-                let cameraTempTargetY;
-
-                if (lookingAtDeltaX > worldWidth / 2) {
-                    this.bgPhaseX++;
-                    cameraTempTargetX = this.lookingAt.x + worldWidth;
-                } else if (lookingAtDeltaX < -worldWidth / 2) {
-                    this.bgPhaseX--;
-                    cameraTempTargetX = this.lookingAt.x - worldWidth;
-                } else {
-                    cameraTempTargetX = this.lookingAt.x + lookingAtDeltaX * 0.02;
-                }
-
-                if (lookingAtDeltaY > worldHeight / 2) {
-                    cameraTempTargetY = this.lookingAt.y + worldHeight;
-                    this.bgPhaseY++;
-                } else if (lookingAtDeltaY < -worldHeight / 2) {
-                    this.bgPhaseY--;
-                    cameraTempTargetY = this.lookingAt.y - worldHeight;
-                } else {
-                    cameraTempTargetY = this.lookingAt.y + lookingAtDeltaY * 0.02
-                }
-
-                this.centerCamera(cameraTempTargetX, cameraTempTargetY);
-
-            } else {
-                this.centerCamera(cameraTarget.x, cameraTarget.y);
-            }
-        }
-
-        let bgOffsetX = this.bgPhaseX * worldWidth + this.camera.x;
-        let bgOffsetY = this.bgPhaseY * worldHeight + this.camera.y;
-
-        this.bg1.tilePosition.x = bgOffsetX * 0.01;
-        this.bg1.tilePosition.y = bgOffsetY * 0.01;
-
-        this.bg2.tilePosition.x = bgOffsetX * 0.04;
-        this.bg2.tilePosition.y = bgOffsetY * 0.04;
-
-        this.bg3.tilePosition.x = bgOffsetX * 0.3;
-        this.bg3.tilePosition.y = bgOffsetY * 0.3;
-
-        this.bg4.tilePosition.x = bgOffsetX * 0.75;
-        this.bg4.tilePosition.y = bgOffsetY * 0.75;
-
-        this.elapsedTime = now;
-
-        // Render the stage
-        this.renderer.render(this.stage);
     }
 
     addObject(objData, options) {
-        let sprite;
+        let mesh;
 
-        if (objData.class == Ship) {
-            let shipActor = new ShipActor(this);
-            sprite = shipActor.sprite;
-            this.sprites[objData.id] = sprite;
-            sprite.id = objData.id;
+        if (objData.class == Character) {
+            let characterActor = new CharacterActor(this);
+            mesh = characterActor.mesh;
+            this.sprites[objData.id] = mesh;
+            mesh.id = objData.id;
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
-                this.playerShip = sprite; // save reference to the player ship
-                sprite.actor.shipSprite.tint = 0XFF00FF; // color  player ship
+                this.playerCharacter = mesh; // save reference to the player ship
                 document.body.classList.remove('lostGame');
                 if (!document.body.classList.contains('tutorialDone')){
                     document.body.classList.add('tutorial');
@@ -323,20 +221,21 @@ class SpaaaceRenderer extends Renderer {
             sprite.anchor.set(0.5, 0.5);
         }
 
-        sprite.position.set(objData.x, objData.y);
-        this.layer2.addChild(sprite);
+        mesh.position.x = objData.x;
+        //mesh.position.y = objData.y;
+        mesh.position.z = objData.y;
 
-        Object.assign(sprite, options);
+        Object.assign(mesh, options);
 
-        return sprite;
+        return mesh;
     }
 
     removeObject(obj) {
-        if (this.playerShip && obj.id == this.playerShip.id) {
-            this.playerShip = null;
+        if (this.playerCharacter && obj.id == this.playerCharacter.id) {
+            this.playerCharacter = null;
         }
 
-        if (obj.class == Ship && this.playerShip && obj.id != this.playerShip.id) {
+        if (obj.class == Character && this.playerCharacter && obj.id != this.playerCharacter.id) {
             this.removeOffscreenIndicator(obj);
 
         }
@@ -384,15 +283,15 @@ class SpaaaceRenderer extends Renderer {
 
     updateOffscreenIndicator(objData){
         // player ship might have been destroyed
-        if (!this.playerShip) return;
+        if (!this.playerCharacter) return;
 
         let indicatorEl = document.querySelector('#offscreenIndicator' + objData.id);
         if (!indicatorEl) {
             console.error(`No indicatorEl found with id ${objData.id}`);
             return;
         }
-        let playerShipObj = this.gameEngine.world.objects[this.playerShip.id];
-        let slope = (objData.y - playerShipObj.y) / (objData.x - playerShipObj.x);
+        let playerCharacterObj = this.gameEngine.world.objects[this.playerCharacter.id];
+        let slope = (objData.y - playerCharacterObj.y) / (objData.x - playerCharacterObj.x);
         let b = this.viewportHeight/ 2;
 
         // this.debug.clear();
@@ -404,18 +303,18 @@ class SpaaaceRenderer extends Renderer {
         let padding = 30;
         let indicatorPos = { x: 0, y: 0 };
 
-        if (objData.y < playerShipObj.y - this.viewportHeight/2) {
+        if (objData.y < playerCharacterObj.y - this.viewportHeight/2) {
             indicatorPos.x = this.viewportWidth/2 + (padding - b)/slope;
             indicatorPos.y = padding;
-        } else if (objData.y > playerShipObj.y + this.viewportHeight/2) {
+        } else if (objData.y > playerCharacterObj.y + this.viewportHeight/2) {
             indicatorPos.x = this.viewportWidth/2 + (this.viewportHeight - padding - b)/slope;
             indicatorPos.y = this.viewportHeight - padding;
         }
 
-        if (objData.x < playerShipObj.x - this.viewportWidth/2) {
+        if (objData.x < playerCharacterObj.x - this.viewportWidth/2) {
             indicatorPos.x = padding;
             indicatorPos.y = slope * (-this.viewportWidth/2 + padding) + b;
-        } else if (objData.x > playerShipObj.x + this.viewportWidth/2) {
+        } else if (objData.x > playerCharacterObj.x + this.viewportWidth/2) {
             indicatorPos.x = this.viewportWidth - padding;
             indicatorPos.y = slope * (this.viewportWidth/2 - padding) + b;
         }
@@ -424,7 +323,7 @@ class SpaaaceRenderer extends Renderer {
             indicatorEl.style.opacity = 0;
         } else {
             indicatorEl.style.opacity = 1;
-            let rotation = Math.atan2(objData.y - playerShipObj.y, objData.x - playerShipObj.x);
+            let rotation = Math.atan2(objData.y - playerCharacterObj.y, objData.x - playerCharacterObj.x);
             rotation = rotation * 180/Math.PI; // rad2deg
             indicatorEl.style.transform = `translateX(${indicatorPos.x}px) translateY(${indicatorPos.y}px) rotate(${rotation}deg) `;
         }
@@ -484,9 +383,9 @@ class SpaaaceRenderer extends Renderer {
     }
 
     onKeyChange(e){
-        if (this.playerShip) {
+        if (this.playerCharacter) {
             if (e.keyName === 'up') {
-                this.playerShip.actor.thrustEmitter.emit = e.isDown;
+                this.playerCharacter.actor.move(e.isDown);
             }
         }
     }
@@ -569,4 +468,4 @@ function isWindows() {
     return navigator.platform.indexOf('Win') > -1;
 }
 
-module.exports = SpaaaceRenderer;
+module.exports = MMORPGRenderer;

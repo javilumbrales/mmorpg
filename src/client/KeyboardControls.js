@@ -5,10 +5,10 @@ const Utils = require('../common/Utils');
 // keyboard handling
 const keyCodeTable = {
     32: 'space',
-    37: 'left',
-    38: 'up',
-    39: 'right',
-    40: 'down'
+    65: 'left', //a
+    87: 'up', //w
+    83: 'right', //s
+    90: 'down' //z
 };
 
 /**
