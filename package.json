@@ -1,8 +1,8 @@
 {
-  "name": "spaaace",
+  "name": "mmorpg",
   "version": "1.0.1",
   "engines": {
-    "node": "4.3.0"
+    "node": "6.8.0"
   },
   "description": "An HTML5 multiplayer space shooter based on Incheon",
   "main": "main.js",
