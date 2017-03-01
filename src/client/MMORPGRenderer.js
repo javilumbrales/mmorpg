@@ -106,7 +106,11 @@ console.log(this.canvas);
         this.camera = camera;
 
         // Create light
-        let light = new BABYLON.PointLight("light", new BABYLON.Vector3(0,5,-5), this.scene);
+        //let light = new BABYLON.PointLight("light", new BABYLON.Vector3(0,5,-5), this.scene);
+        var light0 = new BABYLON.HemisphericLight("Hemi0", new BABYLON.Vector3(0, 1, 0), this.scene);
+        light0.diffuse = new BABYLON.Color3(1, 1, 1);
+        light0.specular = new BABYLON.Color3(1, 1, 1);
+        light0.groundColor = new BABYLON.Color3(0, 0, 0);
 
         let ground = BABYLON.Mesh.CreateGround('ground1', this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 2, this.scene);
         var groundMaterial = new BABYLON.StandardMaterial("groundMat", this.scene);
@@ -387,6 +391,13 @@ console.log(this.canvas);
             if (e.keyName === 'up') {
                 this.playerCharacter.actor.move(e.isDown);
             }
+        }
+    }
+    onMouseClick(destination){
+        if (this.playerCharacter) {
+            console.log('move character to');
+            console.log(destination);
+            this.playerCharacter.actor.moveTo(destination);
         }
     }
 

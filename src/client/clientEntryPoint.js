@@ -11,7 +11,7 @@ const defaults = {
     delayInputCount: 3,
     clientIDSpace: 1000000,
     syncOptions: {
-        sync: qsOptions.sync || 'interpolate',
+        sync: qsOptions.sync || 'extrapolate',
         localObjBending: 0.6,
         remoteObjBending: 0.6
     }

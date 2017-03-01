@@ -77,8 +77,12 @@ class MMORPGGameEngine extends GameEngine {
             } else if (inputData.input == 'space') {
                 this.makeMissile(playerCharacter, inputData.messageIndex);
                 this.emit('fireMissile');
+            } else if (inputData.input == 'move') {
+                console.log("player moving to");
+                console.log(inputData);
+                playerCharacter.x = inputData.options.destination.x;
+                playerCharacter.y = inputData.options.destination.z;
             }
-            console.log(playerCharacter.x, playerCharacter.y);
         }
     };
 

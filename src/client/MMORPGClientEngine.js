@@ -3,6 +3,7 @@ const ClientEngine = require('incheon').ClientEngine;
 const MMORPGRenderer = require('../client/MMORPGRenderer');
 const MobileControls = require('../client/MobileControls');
 const KeyboardControls = require('../client/KeyboardControls');
+const MouseControls = require('../client/MouseControls');
 const Character = require('../common/Character');
 const Utils = require('./../common/Utils');
 
@@ -55,7 +56,8 @@ class MMORPGClientEngine extends ClientEngine {
             if (Utils.isTouchDevice()){
                 this.controls = new MobileControls(this.renderer);
             } else {
-                this.controls = new KeyboardControls(this.renderer);
+                //this.controls = new KeyboardControls(this.renderer);
+                this.controls = new MouseControls(this.renderer);
             }
 
             this.controls.on('fire', () => {
@@ -109,17 +111,18 @@ class MMORPGClientEngine extends ClientEngine {
     // our pre-step is to process inputs that are "currently pressed" during the game step
     preStep() {
         if (this.controls) {
-            if (this.controls.activeInput.up) {
-                this.sendInput('up', { movement: true });
+            if (this.renderer.playerCharacter && this.controls.destinations.length) {
+                let destination = this.controls.destinations.pop();
+                this.sendInput('move', { "destination": destination, movement: true });
             }
 
-            if (this.controls.activeInput.left) {
-                this.sendInput('left', { movement: true });
-            }
+            //if (this.controls.activeInput.left) {
+                //this.sendInput('left', { movement: true });
+            //}
 
-            if (this.controls.activeInput.right) {
-                this.sendInput('right', { movement: true });
-            }
+            //if (this.controls.activeInput.right) {
+                //this.sendInput('right', { movement: true });
+            //}
         }
     }
 

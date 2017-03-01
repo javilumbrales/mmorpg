@@ -19,12 +19,13 @@ class CharacterActor{
     }
 
     renderStep(position){
-        if (position.x !== this.mesh.position.x || position.y != this.mesh.position.z) {
+        if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.z)) {
             console.log("moved, updating position");
         console.log(position);
-        console.log('current: ' + this.mesh.position.x + ", " + this.mesh.position.z);
+        console.log('current: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
             this.mesh.position.x = position.x;
             this.mesh.position.z = position.y;
+        console.log('now: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
         }
         //console.log('renderStep', delta);
         if (this.explosionEmitter){
@@ -49,6 +50,21 @@ class CharacterActor{
             console.log(key);
     }
 
+    moveTo(destination) {
+            console.log("Before ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
+
+            this.direction = destination.subtract(this.mesh.position);
+            this.direction.normalize();
+            console.log('direction');
+            console.log(this.direction);
+
+            //let velocity = this.direction * 1 ; // 1 = speed
+            let velocityAndGravity = this.direction.add(new BABYLON.Vector3(0, -9, 0));
+
+            console.log(velocityAndGravity);
+            this.mesh.moveWithCollisions(velocityAndGravity);
+            console.log("After ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
+    }
 
     changeName(name){
         if (this.nameText != null){
