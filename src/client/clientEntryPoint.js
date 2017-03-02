@@ -1,3 +1,4 @@
+require("babel-polyfill");
 const qsOptions = require('query-string').parse(location.search);
 const MMORPGClientEngine = require('../client/MMORPGClientEngine');
 const MMORPGGameEngine = require('../common/MMORPGGameEngine');
