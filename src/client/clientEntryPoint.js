@@ -17,7 +17,6 @@ const defaults = {
         remoteObjBending: 0.6
     }
 };
-console.log('ok');
 let options = Object.assign(defaults, qsOptions);
 
 // create a client engine and a game engine
