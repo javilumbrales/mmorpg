@@ -86,7 +86,6 @@ class MMORPGRenderer extends Renderer {
     initScene() {
         // Get canvas
         this.canvas = document.querySelector('#renderCanvas');
-console.log(this.canvas);
         // Create babylon engine
         this.engine = new BABYLON.Engine(this.canvas, true);
         this.engine.enableOfflineSupport = false;
@@ -99,9 +98,9 @@ console.log(this.canvas);
         // Create the camera
         //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);
         //camera.setTarget(new BABYLON.Vector3(0,0,10));
-        let camera = new BABYLON.ArcRotateCamera("CameraRotate", -Math.PI/2, Math.PI/2.2, 12, new BABYLON.Vector3(0, 4.8, 0), this.scene);
-        camera.wheelPrecision = 15;
-        camera.attachControl(this.canvas);
+        let camera = new BABYLON.ArcRotateCamera('', 1.11, 1.18, 800, new BABYLON.Vector3(0, 0, 0), this.scene);
+        camera.attachControl(this.engine.getRenderingCanvas());
+        camera.wheelPrecision *= 10;
 
         this.camera = camera;
 
@@ -112,11 +111,35 @@ console.log(this.canvas);
         light0.specular = new BABYLON.Color3(1, 1, 1);
         light0.groundColor = new BABYLON.Color3(0, 0, 0);
 
-        let ground = BABYLON.Mesh.CreateGround('ground1', this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 2, this.scene);
-        var groundMaterial = new BABYLON.StandardMaterial("groundMat", this.scene);
-        groundMaterial.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.7);
+        //Terrain texture
+        var extraGround = BABYLON.Mesh.CreateGround("extraGround", this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 1, this.scene, false);
+        var extraGroundMaterial = new BABYLON.StandardMaterial("extraGround", this.scene);
+        extraGroundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/ground.jpg", this.scene);
+        extraGroundMaterial.diffuseTexture.uScale = 60;
+        extraGroundMaterial.diffuseTexture.vScale = 60;
+        extraGround.position.y = -1;
+        extraGround.material = extraGroundMaterial;
+        extraGround.checkCollisions = true;
+
+        //Ground
+        var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'assets/images/heightMap.png', 100, 100, 40, 0, 10, this.scene, false, null );
+        var groundMaterial = new BABYLON.StandardMaterial("ground", this.scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/ground.jpg", this.scene);
+        groundMaterial.diffuseTexture.uScale = 6;
+        groundMaterial.diffuseTexture.vScale = 6;
+        groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        ground.position.y = -1.0;
         ground.material = groundMaterial;
+        groundMaterial.checkCollisions = true;
         ground.checkCollisions = true;
+
+        // Animate the camera at start
+        var easing = new BABYLON.QuinticEase();
+        easing.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEOUT);
+        var time = 60 * 3;
+        BABYLON.Animation.CreateAndStartAnimation('camera.alpha', this.scene.activeCamera, 'alpha', 60, time, 1.11 * 2, -1, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, easing);
+        BABYLON.Animation.CreateAndStartAnimation('camera.beta', this.scene.activeCamera, 'beta', 60, time, 1.18 * 2, 1.20, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, easing);
+        BABYLON.Animation.CreateAndStartAnimation('camera.radius', this.scene.activeCamera, 'radius', 60, time, 800, 50, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, easing);
 
 
         this.isReady = true;
@@ -129,14 +152,14 @@ console.log(this.canvas);
         if (!this.isReady) return; // assets might not have been loaded yet
 
 
-        //this.engine.runRenderLoop(function () {
-            this.scene.render();
-        //}.bind(this));
-        //
+        this.scene.render();
+
+
+        // Center camera
         if (this.playerCharacter) {
             //meshPlayer.rotation.y = 4.69 - cameraArcRotative[0].alpha;
-            this.camera.target.x = parseFloat(this.playerCharacter.position.x);
-            this.camera.target.z = parseFloat(this.playerCharacter.position.z);
+            //this.camera.target.x = parseFloat(this.playerCharacter.position.x);
+            //this.camera.target.z = parseFloat(this.playerCharacter.position.z);
         }
 
         for (let objId of Object.keys(this.sprites)) {
@@ -175,7 +198,10 @@ console.log(this.canvas);
 
             if (sprite) {
                 if (sprite.actor && sprite.actor.renderStep) {
-                    sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
+                    // TODO: FIX THIS
+                    if (!this.clientEngine.isOwnedByPlayer(objData)) {
+                        sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
+                    }
                 }
             }
 
@@ -195,10 +221,10 @@ console.log(this.canvas);
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship
-                document.body.classList.remove('lostGame');
-                if (!document.body.classList.contains('tutorialDone')){
-                    document.body.classList.add('tutorial');
-                }
+                // Center camera
+                console.log('center camera');
+                this.camera.target.x = parseFloat(objData.x);
+                this.camera.target.z = parseFloat(objData.y);
                 document.body.classList.remove('lostGame');
                 document.body.classList.add('gameActive');
                 document.querySelector('#tryAgain').disabled = true;
@@ -207,10 +233,6 @@ console.log(this.canvas);
 
                 this.gameStarted = true; // todo state shouldn't be saved in the renderer
 
-                // remove the tutorial if required after a timeout
-                setTimeout(() => {
-                    document.body.classList.remove('tutorial');
-                }, 10000);
             } else {
                 this.addOffscreenIndicator(objData);
             }
@@ -263,18 +285,7 @@ console.log(this.canvas);
      * @param {Number} targetY
      */
     centerCamera(targetX, targetY) {
-        if (isNaN(targetX) || isNaN(targetY)) return;
-        if (!this.lastCameraPosition){
-            this.lastCameraPosition = {};
-        }
 
-        this.lastCameraPosition.x = this.camera.x;
-        this.lastCameraPosition.y = this.camera.y;
-
-        this.camera.x = this.viewportWidth / 2 - targetX;
-        this.camera.y = this.viewportHeight / 2 - targetY;
-        this.lookingAt.x = targetX;
-        this.lookingAt.y = targetY;
     }
 
     addOffscreenIndicator(objData) {
@@ -383,21 +394,13 @@ console.log(this.canvas);
         for (let x=0; x < scoreArray.length; x++){
             scoreArray[x].el.style.transform = `translateY(${x}rem)`;
         }
-
     }
 
-    onKeyChange(e){
-        if (this.playerCharacter) {
-            if (e.keyName === 'up') {
-                this.playerCharacter.actor.move(e.isDown);
-            }
-        }
-    }
     onMouseClick(destination){
         if (this.playerCharacter) {
-            console.log('move character to');
-            console.log(destination);
-            this.playerCharacter.actor.moveTo(destination);
+            console.log('move character from ', this.playerCharacter.actor.mesh.position, 'to', destination);
+            this.playerCharacter.actor.addDestination(destination);
+            this.playerCharacter.actor.moveToNextDestination();
         }
     }
 
