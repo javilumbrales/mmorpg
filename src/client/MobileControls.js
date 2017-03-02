@@ -12,12 +12,7 @@ class MobileControls{
 
         this.touchContainer = document.querySelector('#renderCanvas');
         this.setupListeners();
-
-        this.activeInput = {
-            up: false,
-            left: false,
-            right: false
-        };
+        this.destinations = [];
 
         let onRequestAnimationFrame = () => {
             this.handleMovementInput();
@@ -42,26 +37,32 @@ class MobileControls{
             }
         };
 
-        this.touchContainer.addEventListener('touchstart', touchHandler, false);
-        this.touchContainer.addEventListener('touchmove', (e) =>{
-            touchHandler(e);
-            // if ingame prevent scrolling
-            if (this.renderer.playerShip) {
-                e.preventDefault();
-            }
-        }, false);
+        //this.touchContainer.addEventListener('touchstart', touchHandler, false);
+        //this.touchContainer.addEventListener('touchmove', (e) =>{
+            //touchHandler(e);
+            //// if ingame prevent scrolling
+            //if (this.renderer.playerCharacter) {
+                //e.preventDefault();
+            //}
+        //}, false);
 
-        this.touchContainer.addEventListener('touchend', (e) => {
-            this.currentTouch = false;
-            this.activeInput.up = false;
-            this.activeInput.left = false;
-            this.activeInput.right = false;
-            this.renderer.onKeyChange({ keyName: 'up', isDown: false });
-        }, false);
+        //this.touchContainer.addEventListener('touchend', (e, pr) => {
+            //let destination = pr.pickedPoint.clone();
+            //destination.y = 0;
+            //this.destinations.push(destination);
+            //this.renderer.onMouseClick(destination);
+        //}, false);
 
-        document.querySelector('.fireButton').addEventListener('click', () => {
-            this.emit('fire');
-        });
+        //document.querySelector('.fireButton').addEventListener('click', () => {
+            //this.emit('fire');
+        //});
+        this.renderer.scene.onPointerDown = (evt, pr) => {
+            evt.preventDefault();
+            let destination = pr.pickedPoint.clone();
+            destination.y = 0;
+            this.destinations.push(destination);
+            this.renderer.onMouseClick(destination);
+        };
     }
 
     handleMovementInput(){
