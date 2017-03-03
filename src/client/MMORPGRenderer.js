@@ -7,6 +7,8 @@ const Utils= require('./../common/Utils');
 const Missile = require('../common/Missile');
 const Character = require('../common/Character');
 const CharacterActor = require('./CharacterActor');
+const TreeGenerator = require('./TreeGenerator');
+const randomColor = require('./randomColor');
 
 /**
  * Renderer for the MMORPG (Babylon.js)
@@ -120,18 +122,65 @@ class MMORPGRenderer extends Renderer {
         extraGround.position.y = -1;
         extraGround.material = extraGroundMaterial;
         extraGround.checkCollisions = true;
+        extraGround.receiveShadows = true;
 
         //Ground
-        var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'assets/images/heightMap.png', 100, 100, 40, 0, 10, this.scene, false, null );
+        //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'assets/images/heightMap.png', 100, 100, 40, 0, 10, this.scene, false, null );
         var groundMaterial = new BABYLON.StandardMaterial("ground", this.scene);
         groundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/ground.jpg", this.scene);
         groundMaterial.diffuseTexture.uScale = 6;
         groundMaterial.diffuseTexture.vScale = 6;
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        ground.position.y = -1.0;
-        ground.material = groundMaterial;
+
+        //ground.position.y = -1.0;
+        //ground.material = groundMaterial;
         groundMaterial.checkCollisions = true;
-        ground.checkCollisions = true;
+        //ground.checkCollisions = true;
+
+        // Castle
+        //var loader = new BABYLON.AssetsManager(this.scene);
+        //var castleLoaded = function(t) {
+            //t.loadedMeshes.forEach(function(m) {
+                ////m.scaling = new BABYLON.Vector3(15, 6, 1);
+                //m.scaling.scaleInPlace(0.05);
+                //m.rotate(BABYLON.Axis.X, -Math.PI / 2, BABYLON.Space.LOCAL);
+                //m.position.x = 10;
+                //m.position.y = 0;
+                //m.position.z = 50;
+                //m.checkCollisions = true;
+                //m.material = groundMaterial;
+            //});
+        //};
+        //var castle = loader.addMeshTask("*", "", "assets/", "castle.babylon");
+        //castle.onSuccess = castleLoaded;
+
+
+        //loader.load();
+
+        // Fog
+        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+        this.scene.fogDensity = 0.003;
+        this.scene.fogColor = new BABYLON.Color3(0.8,0.83,0.8);
+
+        // The trunk color
+        var trunkColor = randomColor({hue: 'orange',luminosity: 'dark', format: 'rgbArray'});
+        let trunkMaterial = new BABYLON.StandardMaterial("trunk", this.scene);
+        trunkMaterial.diffuseColor = BABYLON.Color3.FromInts(trunkColor[0],trunkColor[1],trunkColor[2]);
+        trunkMaterial.specularColor = BABYLON.Color3.Black();
+
+        for (var i = 0; i < 50; i++) {
+            // The color of the foliage
+            var branchColor = randomColor({hue: 'green', luminosity: 'darl', format: 'rgbArray'});
+            let leafMaterial = new BABYLON.StandardMaterial("mat", this.scene);
+            leafMaterial.diffuseColor = BABYLON.Color3.FromInts(branchColor[0],branchColor[1],branchColor[2]);
+            leafMaterial.specularColor = BABYLON.Color3.Black();
+            var tree =  TreeGenerator(this.getRand(6, 12), this.getRand(60, 80), trunkMaterial, leafMaterial, this.scene);
+            tree.position.x = this.getRand(-this.gameEngine.worldSettings.width / 2, this.gameEngine.worldSettings.width / 2);
+            tree.position.z = this.getRand(-this.gameEngine.worldSettings.height / 2, this.gameEngine.worldSettings.height / 2);
+            tree.position.y = 15;
+            tree.checkCollisions = true;
+        }
+
 
         // Animate the camera at start
         var easing = new BABYLON.QuinticEase();
@@ -147,19 +196,29 @@ class MMORPGRenderer extends Renderer {
 
     }
 
+    getRand(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+
+    centerCamera(position) {
+        this.camera.target.x = parseFloat(position.x);
+        this.camera.target.z = parseFloat(position.z);
+    }
+
     draw() {
         super.draw();
+
         if (!this.isReady) return; // assets might not have been loaded yet
 
 
         this.scene.render();
 
-
         // Center camera
         if (this.playerCharacter) {
             //meshPlayer.rotation.y = 4.69 - cameraArcRotative[0].alpha;
-            //this.camera.target.x = parseFloat(this.playerCharacter.position.x);
-            //this.camera.target.z = parseFloat(this.playerCharacter.position.z);
+            this.centerCamera(this.playerCharacter.position);
         }
 
         for (let objId of Object.keys(this.sprites)) {
@@ -222,9 +281,9 @@ class MMORPGRenderer extends Renderer {
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship
                 // Center camera
-                console.log('center camera');
                 this.camera.target.x = parseFloat(objData.x);
                 this.camera.target.z = parseFloat(objData.y);
+
                 document.body.classList.remove('lostGame');
                 document.body.classList.add('gameActive');
                 document.querySelector('#tryAgain').disabled = true;
@@ -279,14 +338,6 @@ class MMORPGRenderer extends Renderer {
         }
     }
 
-    /**
-     * Centers the viewport on a coordinate in the gameworld
-     * @param {Number} targetX
-     * @param {Number} targetY
-     */
-    centerCamera(targetX, targetY) {
-
-    }
 
     addOffscreenIndicator(objData) {
         let container = document.querySelector('#offscreenIndicatorContainer');
@@ -420,19 +471,6 @@ class MMORPGRenderer extends Renderer {
             }
         }
     }
-
-    /*
-     * Takes in game coordinates and translates them into screen coordinates
-     * @param obj an object with x and y properties
-     */
-    gameCoordsToScreen(obj){
-        // console.log(obj.x , this.viewportWidth / 2 , this.camera.x)
-        return {
-            x: obj.x + this.camera.x,
-            y: obj.y + this.camera.y
-        };
-    }
-
 }
 
 function getCentroid(objects) {

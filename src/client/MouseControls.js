@@ -30,6 +30,7 @@ class MouseControls{
         if (pr.hit) {
             let destination = pr.pickedPoint.clone();
             destination.y = 0;
+            //destination.y += 1;
             this.destinations.push(destination);
             this.renderer.onMouseClick(destination);
         }

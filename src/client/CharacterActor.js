@@ -44,10 +44,6 @@ class CharacterActor{
         }
     }
 
-    centerCamera() {
-        this.camera.target.x = parseFloat(this.mesh.position.x);
-        this.camera.target.z = parseFloat(this.mesh.position.z);
-    }
     addDestination(value, data) {
         // Add this destination to the set of destination
         this.destinations.push({ position: value, data: data });
@@ -67,7 +63,6 @@ class CharacterActor{
                 if (this.destinations.length == 0) {
                     // Animate the character in idle animation
                     // Call function when final destination is reached
-                    this.centerCamera();
                 }
                 else {
                     this.moveToNextDestination();
@@ -76,33 +71,16 @@ class CharacterActor{
             else {
                 this._lastDistance = distance;
                 // Add direction to the position
-                var delta = this._direction.scale(this.mesh.getScene().getAnimationRatio() * this.speed);
+                let delta = this._direction.scale(this.mesh.getScene().getAnimationRatio() * this.speed);
                 //this.mesh.position.addInPlace(delta);
 
-                //let  velocityAndGravity = this._direction.add(new BABYLON.Vector3(0, -9, 0));
+                //let velocityAndGravity = delta.add(new BABYLON.Vector3(0, -9, 0));
 
                 //console.log(velocityAndGravity);
                 //this.mesh.moveWithCollisions(velocityAndGravity);
                 this.mesh.moveWithCollisions(delta);
             }
         }
-    }
-    move(key) {
-        /*
-            let posX = Math.sin(parseFloat(this.mesh.rotation.y));
-            let posZ = Math.cos(parseFloat(this.mesh.rotation.y));
-            console.log("Before ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
-            console.log("Moving to:", posX, posZ);
-            let velocity = new BABYLON.Vector3(parseFloat(posX) / 1, 0, parseFloat(posZ) / 1);
-            this.mesh.moveWithCollisions(velocity);
-
-            let  velocityAndGravity = velocity.add(new BABYLON.Vector3(0, -9, 0));
-
-            console.log(velocityAndGravity);
-            this.mesh.moveWithCollisions(velocityAndGravity);
-            console.log("After ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
-            console.log(key);
-            */
     }
 
     moveToNextDestination() {
@@ -114,21 +92,18 @@ class CharacterActor{
         // Compute direction
         this._direction = this._destination.position.subtract(this.mesh.position);
         this._direction.normalize();
-        /*
-            console.log("Before ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
 
-            this.direction = destination.subtract(this.mesh.position);
-            this.direction.normalize();
-            console.log('direction');
-            console.log(this.direction);
+        // Rotate
+        this.lookAt(this._destination.position);
+    }
 
-            //let velocity = this.direction * 1 ; // 1 = speed
-            let velocityAndGravity = this.direction.add(new BABYLON.Vector3(0, -9, 0));
-
-            console.log(velocityAndGravity);
-            this.mesh.moveWithCollisions(velocityAndGravity);
-            console.log("After ", this.mesh.position.x, this.mesh.position.y, this.mesh.position.z);
-            */
+    /**
+     * The character looks at the given position, but rotates only along Y-axis
+     * */
+    lookAt(value){
+        var dv = value.subtract(this.mesh.position);
+        var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
+        this.mesh.rotation.y = yaw ;
     }
 
     changeName(name){
@@ -136,34 +111,30 @@ class CharacterActor{
             this.nameText.dispose();
         }
 
-        var planeMaterial, plan, planeTexture, textureContext, size, textSize;
-        plan = BABYLON.Mesh.CreatePlane("Etiquetes", 1.0, this.scene);
-        plan.scaling.y = 0.8;
-        plan.scaling.x = 3;
-        plan.position = new BABYLON.Vector3(0, 2.75, 0);
-        planeMaterial = new BABYLON.StandardMaterial("plane material", this.scene);
-        planeTexture = new BABYLON.DynamicTexture("dynamic texture", 128, this.scene, true);
-        planeTexture.hasAlpha = true;
-        textureContext = planeTexture.getContext();
-        textureContext.font = "bold 40px Calibri";
-        size = planeTexture.getSize();
-        textureContext.save();
-        textureContext.fillStyle = "red";
-        textureContext.fillRect(0, 0, size.width, size.height);
-        textSize = textureContext.measureText(name);
-        textureContext.fillStyle = "white";
-        textureContext.fillText(name, (size.width - textSize.width) / 2, (size.height + 20) / 2);
-        textureContext.restore();
-        planeTexture.update();
-        planeMaterial.diffuseTexture = planeTexture;
-        plan.material = planeMaterial;
-        plan.parent = this.mesh;
-        this.nameText = plan;
-        //this.nameText = new PIXI.Text(name, {fontFamily:"arial", fontSize: "12px", fill:"white"});
-        //this.nameText.anchor.set(0.5, 0.5);
-        //this.nameText.y = -40;
-        //this.nameText.alpha = 0.3;
-        //this.sprite.addChild(this.nameText);
+        var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 512, this.scene, true);
+        dynamicTexture.hasAlpha = true;
+        var name = name;
+        var ctx =  dynamicTexture.getContext();
+        var font = "bold 52px verdana";
+        ctx.font= font;
+        var width = ctx.measureText(name).width;
+        dynamicTexture.drawText(name, 256 - width/2, 52, font, "lightblue", "red"); //write "" into the last parameter to hide the plate
+        dynamicTexture.uScale = 1;
+        dynamicTexture.vScale = 0.125;
+        dynamicTexture.update(false);
+
+        var result = BABYLON.Mesh.CreatePlane("nameplate", 10, this.scene, false);
+        result.position = new BABYLON.Vector3(0, 2.75, 0);
+        result.rotation.x = Math.PI;
+        result.scaling.y = 0.125;
+        result.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        var mat = new BABYLON.StandardMaterial("nameplateMat", this.scene);
+        mat.diffuseTexture = dynamicTexture;
+        mat.backFaceCulling = false;
+
+        result.material = mat;
+        result.parent = this.mesh;
+        this.nameText = result;
     }
 
     destroy(){
