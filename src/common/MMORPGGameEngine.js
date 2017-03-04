@@ -37,17 +37,21 @@ class MMORPGGameEngine extends GameEngine {
             }
         });
 
-        this.on('postStep', this.reduceVisibleThrust.bind(this));
+        this.on('postStep', this.afterStep.bind(this));
     };
 
-    reduceVisibleThrust(postStepEv) {
+    /**
+     * Disable animations after the step
+     */
+    afterStep(postStepEv) {
         if (postStepEv.isReenact)
             return;
 
         for (let objId of Object.keys(this.world.objects)) {
             let o = this.world.objects[objId];
-            if (Number.isInteger(o.showThrust) && o.showThrust >= 1)
-                o.showThrust--;
+            if (Number.isInteger(o.animation) && o.animation == 20) {
+                //o.animation = 0;
+            }
         }
     }
 
@@ -72,17 +76,40 @@ class MMORPGGameEngine extends GameEngine {
             if (inputData.input == 'up') {
                 //playerCharacter.isAccelerating = true;
                 playerCharacter.y += 1;
-            } else if (inputData.input == 'right') {
-                //playerCharacter.y += 5;
-            } else if (inputData.input == 'left') {
-                //playerCharacter.z += 5;
+            } else if (inputData.input == 'heal') {
+                playerCharacter.health += playerCharacter.skills[1]['action']['health'];
+                playerCharacter.animation = 1;
+                setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[1]['duration']);
+                console.log('healing', playerCharacter.health, playerCharacter.animation);
+            } else if (inputData.input == 'attack') {
+                playerCharacter.animation = 2;
+                console.log('attacking', playerCharacter.animation);
+            } else if (inputData.input == 'shield') {
+                console.log('activating shield');
+                playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
+                playerCharacter.animation = 3;
+                console.log(playerCharacter.skills[3]['duration']);
+                setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[3]['duration']);
             } else if (inputData.input == 'space') {
                 this.makeMissile(playerCharacter, inputData.messageIndex);
                 this.emit('fireMissile');
             } else if (inputData.input == 'move') {
                 console.log("player moving to");
                 console.log(inputData);
-                playerCharacter.isAccelerating = true;
+                //playerCharacter.isAccelerating = true;
+                //let direction = inputData.options.destination.subtract(playerCharacter.position);
+                console.log(playerCharacter.angle);
+                // angle in radians
+                var angleRadians = Math.atan2(playerCharacter.y - inputData.options.destination.y, playerCharacter.x - inputData.options.destination.x) * 180 / Math.PI;
+                // angle in degrees
+                //var angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
+                console.log("angle:", angleRadians);
+                //console.log(Math.atan2(direction.y, direction.x));
+                //playerCharacter.velocity.set(
+                        //Math.cos(angleRadians * (Math.PI / 180)),
+                        //Math.sin(angleRadians * (Math.PI / 180))
+                        //).setMagnitude(10)
+                    //.add(playerCharacter.velocity.x, playerCharacter.velocity.y);
                 playerCharacter.x = inputData.options.destination.x;
                 playerCharacter.y = inputData.options.destination.z;
             }

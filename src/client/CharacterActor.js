@@ -139,20 +139,118 @@ class CharacterActor{
 
     destroy(){
         return new Promise((resolve) =>{
-            this.explosionEmitter.emit = true;
 
-            if (this.nameText)
-                this.nameText.destroy();
-            this.thrustEmitter.destroy();
-            this.thrustEmitter = null;
-            this.shipSprite.destroy();
+            if (this.nameText) {
+                this.nameText.dispose();
+                this.nameText = null;
+            }
 
             setTimeout(()=>{
-                this.shipContainerSprite.destroy();
-                this.explosionEmitter.destroy();
+                this.mesh.dispose();
+                this.mesh = null;
                 resolve();
-            },3000);
+            }, 3000);
         });
+    }
+
+    animateShield() {
+        if (this.shield) {
+            return;
+        }
+        console.log('animate shield');
+        var cyl = BABYLON.Mesh.CreateSphere("shield", 4, 2, this.scene);
+        var mat = new BABYLON.StandardMaterial("shield", this.scene);
+        var tex = new BABYLON.Texture("assets/images/alphaCloud.png", this.scene);
+        mat.opacityTexture = tex;
+        mat.specularColor.copyFromFloats(0, 0, 0);
+        mat.diffuseColor.copyFromFloats(0.1, 0.5, 0.7);
+        mat.emissiveColor.copyFromFloats(0.1, 0.5, 0.7);
+        cyl.material = mat;
+        cyl.position.y += 1;
+        cyl.visibility = 0.6;
+        cyl.parent = this.mesh;
+        this.shield = cyl;
+
+        this.shieldAnimation = setInterval(animate.bind(this), 16);
+
+        var i = 0;
+        function animate() {
+            i++;
+            cyl.scaling.copyFromFloats(1.5 + 0.05 * Math.sin((i + Math.PI/2)/10), 2+ 0.05 * Math.sin((i + Math.PI)/10), 1.5+ 0.05 * Math.sin(i/10));
+            tex.uOffset += 0.01;
+            tex.vOffset += 0.01;
+            if (i > 500) {
+                clearInterval(this.shieldAnimation);
+                this.shield && this.shield.dispose();
+                this.shield = null;
+            }
+        }
+    }
+
+    animateHeal() {
+        if (this.healing) {
+            return;
+        }
+        var selectTexture = new BABYLON.DynamicTexture("selectTexture", 512, this.scene, true);
+        var context = selectTexture._context;
+        var invertY = true;
+        var size = selectTexture.getSize();
+
+        var posX = 256;
+        var posY = 256;
+        var radius = 220;
+        context.arc(posX, posY, radius, 0, 2 * Math.PI, false);
+        context.fillStyle = 'rgba(0, 100, 0, 0.5)';
+        context.fill();
+        context.lineWidth = 30;
+        context.strokeStyle = 'rgb(0, 255, 0)';;
+        //context.setLineDash([60, 55]);
+        context.stroke();
+        selectTexture.update(invertY);
+
+        var selectMaterial = new BABYLON.StandardMaterial('selectedBoxMaterial', this.scene);
+        selectMaterial.emissiveTexture = selectTexture;
+        selectMaterial.diffuseTexture = selectTexture;
+        selectMaterial.opacityTexture = selectTexture;
+
+        // Our built-in 'ground' shape. Params: name, width, depth, subdivs, this.scene
+        var ground = [];
+        for (var i = 0; i < 3; i++) {
+            var x = BABYLON.Mesh.CreateGround("ground1", 3, 3, 2, this.scene);
+            x.material = selectMaterial;
+            x.parent = this.mesh;
+            ground.push(x);
+        }
+
+        this.healing = ground;
+
+        var initialvalue = ground[0].position.y + 1;
+        var frame = 0;
+        var j = 0;
+        var health = document.querySelector('#health');
+        function update() {
+            var i = 0;
+            for (var g of ground) {
+                health.style.width = parseFloat(health.style.width) < 100 ? (parseFloat(health.style.width)+ 0.1 + "%") : '100%';
+                j++;
+                i++;
+                g.position.y = initialvalue + Math.sin((frame + i *22)/15);
+                g.visibility = 0.4 + 0.2 * (1 + Math.sin(Math.PI + (frame + i *11)/5));
+            }
+            //ground.scaling.x = ground.scaling.z = 0.9 + 0.2 * Math.sin(frame/5);
+            frame++;
+
+            if (j > 100) {
+                clearInterval(this.shieldAnimation);
+                for (var g of ground) {
+                    g.dispose()
+                };
+                this.healing = null;
+            }
+        }
+
+        this.shieldAnimation = setInterval(update.bind(this), 20);
+
     }
 
 }

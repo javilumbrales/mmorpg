@@ -3,8 +3,6 @@
         <title>MMORPG | powered by Incheon.gg</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
         <script src="dist/bundle.js" type="text/javascript"></script>
-        <script src="https://use.typekit.net/lai1bbe.js"></script>
-        <link rel="stylesheet" type="text/css" href="dist/styles.css" />
     </head>
     <body class="">
         <div id="guiContainer">
@@ -16,10 +14,19 @@
                 <div>Latency: <span class="latencyData">N/A</span></div>
                 <div>Latency (avg): <span class="averageLatencyData">N/A</span></div>
             </div>
+            <div class="hp-bar">
+                <div class="meter red">
+                    <span id='health' style="width: 50%"> &nbsp;</span>
+                </div>
+            </div>
             <div class="score"></div>
             <div id="offscreenIndicatorContainer"></div>
             <div class="keysContainer"></div>
-            <div class="fireButton"></div>
+            <div class="buttonsContainer">
+                <div class="skill attack"></div>
+                <div class="skill heal"></div>
+                <div class="skill shield"></div>
+            </div>
             <h2>This is an awesome live JS multiplayer MMORPG game</h2>
         </div>
         <canvas id="renderCanvas"></canvas>

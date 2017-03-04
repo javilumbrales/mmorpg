@@ -60,8 +60,14 @@ class MMORPGClientEngine extends ClientEngine {
                 this.controls = new MouseControls(this.renderer);
             }
 
-            this.controls.on('fire', () => {
-                this.sendInput('space');
+            this.renderer.on('attack', () => {
+                this.sendInput('attack');
+            });
+            this.renderer.on('shield', () => {
+                this.sendInput('shield');
+            });
+            this.renderer.on('heal', () => {
+                this.sendInput('heal');
             });
 
         });

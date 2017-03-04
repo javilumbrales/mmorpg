@@ -83,6 +83,20 @@ class MMORPGRenderer extends Renderer {
         if (BABYLON.Engine.isSupported()) {
             this.initScene();
         }
+        this.setupListeners();
+    }
+
+    setupListeners() {
+
+        let skills = document.querySelectorAll('.skill');
+
+        for (let i = 0; i < skills.length; i++) {
+            skills[i].addEventListener('click', (e) => {
+                let action = e.currentTarget.attributes['class'].value.replace('skill', '').trim();
+                //console.log(action);
+                this.emit(action);
+            });
+        }
     }
 
     initScene() {
@@ -158,9 +172,9 @@ class MMORPGRenderer extends Renderer {
         //loader.load();
 
         // Fog
-        this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-        this.scene.fogDensity = 0.003;
-        this.scene.fogColor = new BABYLON.Color3(0.8,0.83,0.8);
+        //this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+        //this.scene.fogDensity = 0.003;
+        //this.scene.fogColor = new BABYLON.Color3(0.8,0.83,0.8);
 
         // The trunk color
         var trunkColor = randomColor({hue: 'orange',luminosity: 'dark', format: 'rgbArray'});
@@ -260,6 +274,17 @@ class MMORPGRenderer extends Renderer {
                     // TODO: FIX THIS
                     if (!this.clientEngine.isOwnedByPlayer(objData)) {
                         sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
+                    } else {
+                        //console.log(objData, objData.animation);
+                        if (objData.animation) {
+                            if (objData.animation == 1) {
+                                this.playerCharacter.actor.animateHeal();
+                            } else if (objData.animation == 2) {
+                            } else if (objData.animation == 3) {
+                                this.playerCharacter.actor.animateShield();
+                            }
+                        }
+
                     }
                 }
             }
