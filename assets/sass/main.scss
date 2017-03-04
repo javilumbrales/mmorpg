@@ -226,7 +226,7 @@ button{
 
     .skill {
         float: left;
-        width: 12px;
+        width: 18px;
         height: 18px;
         padding: 15px;
         border: 1px solid red;
@@ -241,16 +241,16 @@ button{
 }
 
 .shield{
-	&:before{
-		content: ":(";
+    background-image: url("assets/images/shield.png");
+    &:before{
 		color: #ff2f45;
 		transform: translateX(-50%) translateY(-50%);
 	}
 }
 
 .heal{
+	background-image: url("assets/images/heal.png");
 	&:before{
-		content: ":|";
 		color: #ff3f95;
 		transform: translateX(-50%) translateY(-50%);
 	}
@@ -462,11 +462,11 @@ body.gameActive{
         background-image: -webkit-linear-gradient(#f1a165, #f36d0a);
     }
 
-    .red > span {
-        background-color: #f0a3a3;
-        background-image: -moz-linear-gradient(top, #f0a3a3, #f42323);
-        background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #f0a3a3),color-stop(1, #f42323));
-        background-image: -webkit-linear-gradient(#f0a3a3, #f42323);
+    .green > span {
+        background-color: green;
+        background-image: -moz-linear-gradient(top, green, dark-green);
+        background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, green),color-stop(1, dark-green));
+        background-image: -webkit-linear-gradient(green, dark-green);
     }
 
     .nostripes > span > span, .nostripes > span:after {

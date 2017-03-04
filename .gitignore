@@ -4,3 +4,4 @@ dist/bundle.js
 *.swp
 *.trace
 yarn.lock
+.DS_Store
