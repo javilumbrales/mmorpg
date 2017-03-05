@@ -1,14 +1,17 @@
 'use strict';
 
 const GameEngine = require('incheon').GameEngine;
+const Point = require('incheon').Point;
 const Missile= require('./Missile');
 const Character = require('./Character');
 const Timer = require('./Timer');
+
 
 class MMORPGGameEngine extends GameEngine {
 
     start() {
         let that = this;
+        this.Epsilon = 0.1;
         super.start();
 
         this.timer = new Timer();
@@ -51,6 +54,70 @@ class MMORPGGameEngine extends GameEngine {
             let o = this.world.objects[objId];
             if (Number.isInteger(o.animation) && o.animation == 20) {
                 //o.animation = 0;
+            }
+            if (o.destination) {
+                this.moveToTarget(o);
+            }
+        }
+    }
+
+    moveToTarget(obj) {
+
+        //var movementVector=(new Point(target.x,target.y)).subtract(obj.x,obj.y);
+        //movementVector.setMagnitude(obj.maxSpeed);
+        //this.moveInDirecton(obj, movementVector);
+
+        obj.isMoving = true;
+        // Compute direction
+        let direction = (new Point()).copyFrom(obj.destination).subtract(obj.x, obj.y);
+        direction.normalize();
+        this.moveInDirecton(obj, direction);
+    }
+
+
+    distance(targeta, targetb) {
+        let dx = targeta.x - targetb.x;
+        let dy = targeta.y - targetb.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    moveInDirecton(obj, direction) {
+        // If a destination has been set and the character has not been stopped
+        if (obj.isMoving && obj.destination) {
+            // Compute distance to destination
+            var distance = this.distance(new Point(obj.x, obj.y), obj.destination);
+            // Change destination if th distance is increasing (should not)
+            if (distance < this.Epsilon || distance > obj._lastDistance) {
+                // Set the minion position to the curent destination
+                obj.x = obj.destination.x;
+                obj.y = obj.destination.y;
+
+                // Destination has been reached
+                obj.isMoving = false;
+                console.log('arrived!');
+                obj.destination = null;
+                if (!obj.destinations) {
+                    // Animate the character in idle animation
+                    // Call function when final destination is reached
+                }
+                else {
+                    obj.destination = obj.destinations.shift();
+                    this.moveToTarget(obj);
+                }
+            }
+            else {
+                obj._lastDistance = distance;
+                // Add direction to the position
+                let delta = direction.multiply(obj.maxSpeed, obj.maxSpeed);
+                //obj.mesh.position.addInPlace(delta);
+                //console.log('gameengine:', direction, distance, delta);
+
+                //let velocityAndGravity = delta.add(new BABYLON.Vector3(0, -9, 0));
+
+                //console.log(velocityAndGravity);
+                //obj.mesh.moveWithCollisions(velocityAndGravity);
+                obj.x += delta.x;
+                obj.y += delta.y;
             }
         }
     }
@@ -96,22 +163,10 @@ class MMORPGGameEngine extends GameEngine {
             } else if (inputData.input == 'move') {
                 console.log("player moving to");
                 console.log(inputData);
-                //playerCharacter.isAccelerating = true;
-                //let direction = inputData.options.destination.subtract(playerCharacter.position);
-                console.log(playerCharacter.angle);
-                // angle in radians
-                var angleRadians = Math.atan2(playerCharacter.y - inputData.options.destination.y, playerCharacter.x - inputData.options.destination.x) * 180 / Math.PI;
-                // angle in degrees
-                //var angleDeg = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
-                console.log("angle:", angleRadians);
-                //console.log(Math.atan2(direction.y, direction.x));
-                //playerCharacter.velocity.set(
-                        //Math.cos(angleRadians * (Math.PI / 180)),
-                        //Math.sin(angleRadians * (Math.PI / 180))
-                        //).setMagnitude(10)
-                    //.add(playerCharacter.velocity.x, playerCharacter.velocity.y);
-                playerCharacter.x = inputData.options.destination.x;
-                playerCharacter.y = inputData.options.destination.z;
+                playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
+                playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
+                //playerCharacter.x = inputData.options.destination.x;
+                //playerCharacter.y = inputData.options.destination.z;
             }
         }
     };

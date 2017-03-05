@@ -1,13 +1,11 @@
 const BABYLON = require("babylonjs");
-const ThrusterEmitterConfig = require("./ThrusterEmitter.json");
-const ExplosionEmitterConfig = require("./ExplosionEmitter.json");
 
 class CharacterActor{
 
     constructor(renderer){
         this.Epsilon = 0.1;
 
-
+        this.renderer = renderer;
         this.gameEngine = renderer.gameEngine;
         this.camera = renderer.camera;
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
@@ -24,6 +22,21 @@ class CharacterActor{
         this._destination = false;
         this.speed = 4;
 
+        // We must create a new ActionManager for our building in order to use Actions.
+        this.mesh.actionManager = new BABYLON.ActionManager(this.scene);
+        var onpickAction = new BABYLON.ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger,
+                function(evt) {
+                    if (evt.meshUnderPointer) {
+                        // Find the clicked mesh
+                        var meshClicked = evt.meshUnderPointer;
+                        this.renderer.setTarget(meshClicked);
+                    }
+                }.bind(this));
+
+        this.mesh.actionManager.registerAction(onpickAction);
+
+
         // Add move function to the character
         this.mesh.getScene().registerBeforeRender(function () {
             this.moveCharacter();
@@ -35,12 +48,17 @@ class CharacterActor{
 
     renderStep(position){
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.z)) {
-            console.log("moved, updating position");
-            console.log(position);
-            console.log('current: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
-            this.mesh.position.x = position.x;
-            this.mesh.position.z = position.y;
-            console.log('now: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
+            //console.log("moved, updating position");
+            //console.log('current: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
+            ////this.mesh.position.x = position.x;
+            ////this.mesh.position.z = position.y;
+           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.y); //.scale(this.mesh.getScene().getAnimationRatio());
+            console.log('renderStep, delta movewithcollisions:', delta);
+           //this.mesh.moveWithCollisions(delta);
+           this.mesh.position.x = delta.x;
+           this.mesh.position.y = delta.y;
+           this.mesh.position.z = delta.z;
+            console.log('renderStep after: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
         }
     }
 
@@ -79,6 +97,7 @@ class CharacterActor{
                 //console.log(velocityAndGravity);
                 //this.mesh.moveWithCollisions(velocityAndGravity);
                 this.mesh.moveWithCollisions(delta);
+                //console.log('renderer after: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
             }
         }
     }
@@ -113,7 +132,7 @@ class CharacterActor{
 
         var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 512, this.scene, true);
         dynamicTexture.hasAlpha = true;
-        var name = name;
+        this.name = name;
         var ctx =  dynamicTexture.getContext();
         var font = "bold 52px verdana";
         ctx.font= font;

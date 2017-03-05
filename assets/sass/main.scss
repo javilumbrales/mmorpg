@@ -305,6 +305,7 @@ h2{
 body.gameActive{
 	.hud { opacity: 0.3;}
 	.hp-bar { opacity: 0.6;}
+	//.target-hp-bar { opacity: 0.6;}
 	.score { opacity: 1;}
     .buttonsContainer { opacity: 0.6;}
 	.offscreenIndicator{ opacity: 0.8}
@@ -334,11 +335,28 @@ body.gameActive{
 
 /* HP Bar */
 .hp-bar {
-
-	position: absolute;
 	top: 0px;
 	left: 0;
 	width: 20rem;
+}
+
+#target-health-name {
+    width: 100%;
+    position:absolute;
+    text-align:center;
+    z-index:10;
+    top: 1px;
+}
+
+.target-hp-bar {
+	top: 0px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 20rem;
+}
+.hp-bar, .target-hp-bar {
+
+	position: absolute;
 	font-size: 12px;
 	padding: 1rem;
 	color: #fff;

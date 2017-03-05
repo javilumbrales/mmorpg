@@ -293,6 +293,15 @@ class MMORPGRenderer extends Renderer {
         }
 
     }
+    setTarget(obj) {
+        document.querySelector('.target-hp-bar').style.opacity = 0.7;
+        var health = document.querySelector('#target-health');
+        var currentHealth = obj.data.health * 100 / obj.data.original_health ;
+        var name = document.querySelector('#target-health-name');
+        name.innerHTML = obj.actor.name;
+        health.style.width = parseFloat(currentHealth) + '%';
+
+    }
 
     addObject(objData, options) {
         let mesh;
@@ -302,6 +311,7 @@ class MMORPGRenderer extends Renderer {
             mesh = characterActor.mesh;
             this.sprites[objData.id] = mesh;
             mesh.id = objData.id;
+            mesh.data = objData;
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship

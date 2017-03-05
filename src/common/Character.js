@@ -34,7 +34,7 @@ class Character extends DynamicObject {
         super(id, x, y);
         this.class = Character;
         this.gameEngine = gameEngine;
-        this.health = 100;
+        this.health = this.original_health = 100;
         this.shield = 10;
         this.animation = 0;
 
@@ -52,7 +52,7 @@ class Character extends DynamicObject {
         }
     }
 
-    get maxSpeed() { return 3.0; }
+    get maxSpeed() { return 1.0; }
 }
 
 module.exports = Character;
