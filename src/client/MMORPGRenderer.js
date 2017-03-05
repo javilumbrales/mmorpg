@@ -110,6 +110,9 @@ class MMORPGRenderer extends Renderer {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.collisionsEnabled = true;
 
+        var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
+
+
 
         // Create the camera
         //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);
