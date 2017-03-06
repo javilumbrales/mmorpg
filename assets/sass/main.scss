@@ -233,9 +233,9 @@ button{
     }
 }
 .attack{
+    background-image: url("assets/images/attack.png");
 	&:before{
-		content: ":)";
-		color: #ff2f95;
+        color: #ff2f95;
 		transform: translateX(-50%) translateY(-50%);
 	}
 }
@@ -353,6 +353,21 @@ body.gameActive{
 	left: 50%;
 	transform: translateX(-50%);
 	width: 20rem;
+    .close {
+	    pointer-events: all;
+        cursor:pointer;
+        position:absolute;
+        top: 10px;
+        right: 0px;
+		background-image: url(assets/images/close.png);
+		background-repeat: no-repeat;
+		background-position: top;
+        background-size: auto;
+        width: 20px;
+        height: 20px;
+        background-color: white;
+        border-radius: 10px;
+    }
 }
 .hp-bar, .target-hp-bar {
 

@@ -97,6 +97,12 @@ class MMORPGRenderer extends Renderer {
                 this.emit(action);
             });
         }
+        let cancel = document.querySelector('#cancel-target');
+        cancel.addEventListener('click', (e) => {
+            this.playerCharacter.target = null;
+            document.querySelector('.target-hp-bar').style.opacity = 0;
+        });
+
     }
 
     initScene() {
@@ -185,6 +191,7 @@ class MMORPGRenderer extends Renderer {
         trunkMaterial.diffuseColor = BABYLON.Color3.FromInts(trunkColor[0],trunkColor[1],trunkColor[2]);
         trunkMaterial.specularColor = BABYLON.Color3.Black();
 
+        /*
         for (var i = 0; i < 50; i++) {
             // The color of the foliage
             var branchColor = randomColor({hue: 'green', luminosity: 'darl', format: 'rgbArray'});
@@ -196,7 +203,7 @@ class MMORPGRenderer extends Renderer {
             tree.position.z = this.getRand(-this.gameEngine.worldSettings.height / 2, this.gameEngine.worldSettings.height / 2);
             tree.position.y = 15;
             tree.checkCollisions = true;
-        }
+        }*/
 
 
         // Animate the camera at start
@@ -236,6 +243,10 @@ class MMORPGRenderer extends Renderer {
         if (this.playerCharacter) {
             //meshPlayer.rotation.y = 4.69 - cameraArcRotative[0].alpha;
             this.centerCamera(this.playerCharacter.position);
+            if (this.playerCharacter.target) {
+                let playerTarget = this.gameEngine.world.objects[this.playerCharacter.target];
+                this.showTargetHeal(playerTarget);
+            }
         }
 
         for (let objId of Object.keys(this.sprites)) {
@@ -275,9 +286,10 @@ class MMORPGRenderer extends Renderer {
             if (sprite) {
                 if (sprite.actor && sprite.actor.renderStep) {
                     // TODO: FIX THIS
-                    if (!this.clientEngine.isOwnedByPlayer(objData)) {
+                    if (objData && !this.clientEngine.isOwnedByPlayer(objData)) {
                         sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
-                    } else {
+                    } else if (objData) {
+                        this.playerCharacter && this.playerCharacter.actor.showHeal();
                         //console.log(objData, objData.animation);
                         if (objData.animation) {
                             if (objData.animation == 1) {
@@ -299,11 +311,15 @@ class MMORPGRenderer extends Renderer {
     setTarget(obj) {
         document.querySelector('.target-hp-bar').style.opacity = 0.7;
         var health = document.querySelector('#target-health');
-        var currentHealth = obj.data.health * 100 / obj.data.original_health ;
         var name = document.querySelector('#target-health-name');
         name.innerHTML = obj.actor.name;
+        this.playerCharacter.target = obj.id;
+        this.emit('target', {"id": obj.id});
+    }
+    showTargetHeal(target) {
+        var health = document.querySelector('#target-health');
+        var currentHealth = target.health * 100 / target.original_health;
         health.style.width = parseFloat(currentHealth) + '%';
-
     }
 
     addObject(objData, options) {

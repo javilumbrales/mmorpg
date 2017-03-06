@@ -21,6 +21,7 @@ class CharacterActor{
         this.isMoving = false;
         this._destination = false;
         this.speed = 4;
+        this.health = document.querySelector('#health');
 
         // We must create a new ActionManager for our building in order to use Actions.
         this.mesh.actionManager = new BABYLON.ActionManager(this.scene);
@@ -206,6 +207,11 @@ class CharacterActor{
         }
     }
 
+    showHeal() {
+        var currentHealth = this.mesh.data.health * 100 / this.mesh.data.original_health;
+        this.health.style.width = parseFloat(currentHealth) + '%';
+    }
+
     animateHeal() {
         if (this.healing) {
             return;
@@ -246,11 +252,10 @@ class CharacterActor{
         var initialvalue = ground[0].position.y + 1;
         var frame = 0;
         var j = 0;
-        var health = document.querySelector('#health');
         function update() {
             var i = 0;
             for (var g of ground) {
-                health.style.width = parseFloat(health.style.width) < 100 ? (parseFloat(health.style.width)+ 0.1 + "%") : '100%';
+                this.mesh.heal += 0.01;
                 j++;
                 i++;
                 g.position.y = initialvalue + Math.sin((frame + i *22)/15);
@@ -259,7 +264,7 @@ class CharacterActor{
             //ground.scaling.x = ground.scaling.z = 0.9 + 0.2 * Math.sin(frame/5);
             frame++;
 
-            if (j > 100) {
+            if (j > 1000) {
                 clearInterval(this.shieldAnimation);
                 for (var g of ground) {
                     g.dispose()

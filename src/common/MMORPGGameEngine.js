@@ -150,13 +150,29 @@ class MMORPGGameEngine extends GameEngine {
                 console.log('healing', playerCharacter.health, playerCharacter.animation);
             } else if (inputData.input == 'attack') {
                 playerCharacter.animation = 2;
-                console.log('attacking', playerCharacter.animation);
+                if (playerCharacter.target) {
+                    let attackTarget = this.world.objects[playerCharacter.target];
+                    let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
+                    if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
+                        attackTarget.health -= (10 - attackTarget.shield);
+                        console.log('attacking target!', attackTarget.health, attackTarget.original_health);
+                        if (attackTarget.health <= 0) {
+                            this.emit('killed', { "character": attackTarget });
+                        }
+                    }
+                }
             } else if (inputData.input == 'shield') {
                 console.log('activating shield');
                 playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
                 playerCharacter.animation = 3;
                 console.log(playerCharacter.skills[3]['duration']);
-                setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[3]['duration']);
+                setTimeout(function() {
+                    playerCharacter.animation = 0;
+                    playerCharacter.shield -= playerCharacter.skills[3]['action']['shield'];
+                }.bind(this), playerCharacter.skills[3]['duration']);
+            } else if (inputData.input == 'target') {
+                console.log('new target', inputData.options);
+                playerCharacter.target = inputData.options.id;
             } else if (inputData.input == 'space') {
                 this.makeMissile(playerCharacter, inputData.messageIndex);
                 this.emit('fireMissile');

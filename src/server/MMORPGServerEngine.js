@@ -17,21 +17,12 @@ class MMORPGServerEngine extends ServerEngine {
         super.start();
         //for (let x = 0; x < 3; x++) this.makeBot();
 
-        /*
-        this.gameEngine.on('missileHit', (e) => {
-            // add kills
-            if (this.scoreData[e.missile.shipOwnerId]) this.scoreData[e.missile.shipOwnerId].kills++;
-            // remove score data for killed ship
-            delete this.scoreData[e.ship.id];
-            this.updateScore();
 
-            console.log(`ship killed: ${e.ship.toString()}`);
-            this.gameEngine.removeObjectFromWorld(e.ship.id);
-            if (e.ship.isBot) {
-                setTimeout(() => this.makeBot(), 5000);
-            }
+        this.gameEngine.on('killed', (e) => {
+
+            console.log(`player killed: ${e.character.toString()}`);
+            this.gameEngine.removeObjectFromWorld(e.character.id);
         });
-        */
     }
 
     onPlayerConnected(socket) {

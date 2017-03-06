@@ -69,6 +69,9 @@ class MMORPGClientEngine extends ClientEngine {
             this.renderer.on('heal', () => {
                 this.sendInput('heal');
             });
+            this.renderer.on('target', (e) => {
+                this.sendInput('target', e);
+            });
 
         });
 
