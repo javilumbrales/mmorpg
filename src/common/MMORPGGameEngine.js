@@ -126,8 +126,6 @@ class MMORPGGameEngine extends GameEngine {
 
         super.processInput(inputData, playerId);
 
-        console.log("INPUT RECEIVED", inputData, playerId);
-
         // get the player ship tied to the player socket
         let playerCharacter;
 
@@ -144,18 +142,20 @@ class MMORPGGameEngine extends GameEngine {
                 //playerCharacter.isAccelerating = true;
                 playerCharacter.y += 1;
             } else if (inputData.input == 'heal') {
-                playerCharacter.health += playerCharacter.skills[1]['action']['health'];
+                if (playerCharacter.health < playerCharacter.original_health) {
+                    playerCharacter.health += playerCharacter.skills[1]['action']['health'];
+                }
                 playerCharacter.animation = 1;
                 setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[1]['duration']);
                 console.log('healing', playerCharacter.health, playerCharacter.animation);
             } else if (inputData.input == 'attack') {
                 playerCharacter.animation = 2;
-                if (playerCharacter.target) {
+                if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
                     let attackTarget = this.world.objects[playerCharacter.target];
                     if (attackTarget) {
                         let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
                         if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
-                            attackTarget.health -= (10 - attackTarget.shield);
+                            attackTarget.health -= (playerCharacter.skills[2]['action']['attack'] - attackTarget.shield);
                             console.log('attacking target!', attackTarget.health, attackTarget.original_health);
                             if (attackTarget.health <= 0) {
                                 playerCharacter.target = null;
@@ -163,10 +163,13 @@ class MMORPGGameEngine extends GameEngine {
                             }
                         }
                     }
+                    setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[2]['duration']);
                 }
             } else if (inputData.input == 'shield') {
                 console.log('activating shield');
-                playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
+                if (playerCharacter.shield == playerCharacter.original_shield) {
+                    playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
+                }
                 playerCharacter.animation = 3;
                 console.log(playerCharacter.skills[3]['duration']);
                 setTimeout(function() {
@@ -176,23 +179,18 @@ class MMORPGGameEngine extends GameEngine {
             } else if (inputData.input == 'target') {
                 console.log('new target', inputData.options);
                 playerCharacter.target = inputData.options.id;
-            } else if (inputData.input == 'space') {
-                this.makeMissile(playerCharacter, inputData.messageIndex);
-                this.emit('fireMissile');
             } else if (inputData.input == 'move') {
                 console.log("player moving to");
                 console.log(inputData);
                 playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
                 playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
-                //playerCharacter.x = inputData.options.destination.x;
-                //playerCharacter.y = inputData.options.destination.z;
             }
         }
     };
 
     /**
-     * Makes a new ship, places it randomly and adds it to the game world
-     * @return {Ship} the added Ship object
+     * Makes a new character, places it randomly and adds it to the game world
+     * @return {Character} the added Character object
      */
     makeCharacter(playerId) {
         let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
@@ -206,39 +204,6 @@ class MMORPGGameEngine extends GameEngine {
 
         return character;
     };
-
-    makeMissile(playerShip, inputId) {
-        let missile = new Missile(++this.world.idCount);
-        missile.x = playerShip.x;
-        missile.y = playerShip.y;
-        missile.angle = playerShip.angle;
-        missile.playerId = playerShip.playerId;
-        missile.shipOwnerId = playerShip.id;
-        missile.inputId = inputId;
-        missile.velocity.set(
-            Math.cos(missile.angle * (Math.PI / 180)),
-            Math.sin(missile.angle * (Math.PI / 180))
-        ).setMagnitude(10)
-        .add(playerShip.velocity.x, playerShip.velocity.y);
-        missile.velX = missile.velocity.x;
-        missile.velY = missile.velocity.y;
-
-        this.trace.trace(`missile[${missile.id}] created vx=${missile.velocity.x} vy=${missile.velocity.y}`);
-
-
-        this.addObjectToWorld(missile);
-        this.timer.add(40, this.destroyMissile, this, [missile.id]);
-
-        return missile;
-    }
-
-    // destroy the missile if it still exists
-    destroyMissile(missileId) {
-        if (this.world.objects[missileId]) {
-            this.trace.trace(`missile[${missileId}] destroyed`);
-            this.removeObjectFromWorld(missileId);
-        }
-    }
 }
 
 module.exports = MMORPGGameEngine;

@@ -155,6 +155,7 @@ class CharacterActor{
         result.material = mat;
         result.parent = this.mesh;
         this.nameText = result;
+        document.querySelector('.hp-bar .health-name').innerHTML = this.name;
     }
 
     destroy(){
@@ -255,7 +256,6 @@ class CharacterActor{
         function update() {
             var i = 0;
             for (var g of ground) {
-                this.mesh.heal += 0.01;
                 j++;
                 i++;
                 g.position.y = initialvalue + Math.sin((frame + i *22)/15);

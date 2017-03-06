@@ -97,10 +97,13 @@ class MMORPGRenderer extends Renderer {
                 this.emit(action);
             });
         }
-        let cancel = document.querySelector('#cancel-target');
-        cancel.addEventListener('click', (e) => {
+        document.querySelector('#cancel-target').addEventListener('click', (e) => {
             this.playerCharacter.target = null;
             document.querySelector('.target-hp-bar').style.opacity = 0;
+        });
+
+        document.querySelector('.hp-bar').addEventListener('click', (e) => {
+            this.setTarget(this.playerCharacter);
         });
 
     }
@@ -241,12 +244,12 @@ class MMORPGRenderer extends Renderer {
 
         // Center camera
         if (this.playerCharacter) {
-            //meshPlayer.rotation.y = 4.69 - cameraArcRotative[0].alpha;
             this.centerCamera(this.playerCharacter.position);
             if (this.playerCharacter.target) {
                 let playerTarget = this.gameEngine.world.objects[this.playerCharacter.target];
                 this.showTargetHeal(playerTarget);
             }
+            this.playerCharacter.actor.showHeal();
         }
 
         for (let objId of Object.keys(this.sprites)) {
@@ -289,7 +292,6 @@ class MMORPGRenderer extends Renderer {
                     if (objData && !this.clientEngine.isOwnedByPlayer(objData)) {
                         sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
                     } else if (objData) {
-                        this.playerCharacter && this.playerCharacter.actor.showHeal();
                         //console.log(objData, objData.animation);
                         if (objData.animation) {
                             if (objData.animation == 1) {
@@ -311,8 +313,7 @@ class MMORPGRenderer extends Renderer {
     setTarget(obj) {
         document.querySelector('.target-hp-bar').style.opacity = 0.7;
         var health = document.querySelector('#target-health');
-        var name = document.querySelector('#target-health-name');
-        name.innerHTML = obj.actor.name;
+        document.querySelector('.target-hp-bar .health-name').innerHTML = obj.actor.name;
         this.playerCharacter.target = obj.id;
         this.emit('target', {"id": obj.id});
     }
@@ -464,46 +465,16 @@ class MMORPGRenderer extends Renderer {
         if (data.RTTAverage){ qs('.averageLatencyData').innerHTML = truncateDecimals(data.RTTAverage, 2);}
     }
 
-    updateScore(data){
-        let scoreContainer = qs('.score');
-        let scoreArray = [];
-
-        // remove score lines with objects that don't exist anymore
-        let scoreEls = scoreContainer.querySelectorAll('.line');
-        for (let x=0; x < scoreEls.length; x++){
-            if (data[scoreEls[x].dataset.objId] == null){
-                scoreEls[x].parentNode.removeChild(scoreEls[x]);
-            }
+    updateStatus(data){
+        if (data['status'] == 'connected' && data['data']['id'] == this.playerCharacter.id) {
+            this.playerCharacter.actor.changeName(data['data']['name']);
         }
-
-        for (let id of Object.keys(data)){
-            let scoreEl = scoreContainer.querySelector(`[data-obj-id='${id}']`);
-            // create score line if it doesn't exist
-            if (scoreEl == null){
-                scoreEl = document.createElement('div');
-                scoreEl.classList.add('line');
-                if (this.playerShip && this.playerShip.id == parseInt(id)) scoreEl.classList.add('you');
-                scoreEl.dataset.objId = id;
-                scoreContainer.appendChild(scoreEl);
-            }
-
-            // stupid string/number conversion
-            if (this.sprites[parseInt(id)])
-                this.sprites[parseInt(id)].actor.changeName(data[id].name);
-
-            scoreEl.innerHTML = `${data[id].name}: ${data[id].kills}`;
-
-            scoreArray.push({
-                el: scoreEl,
-                data: data[id]
-            });
-        }
-
-        scoreArray.sort((a, b) => {return a.data.kills < b.data.kills;});
-
-        for (let x=0; x < scoreArray.length; x++){
-            scoreArray[x].el.style.transform = `translateY(${x}rem)`;
-        }
+        let statusContainer = qs('.status');
+        let statusEl = document.createElement('div');
+        statusEl.classList.add('line');
+        statusEl.innerHTML = data['message'];
+        statusContainer.appendChild(statusEl);
+        statusContainer.scrollTop = statusContainer.scrollHeight;
     }
 
     onMouseClick(destination){

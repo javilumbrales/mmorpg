@@ -100,8 +100,8 @@ class MMORPGClientEngine extends ClientEngine {
     // extend ClientEngine connect to add own events
     connect() {
         return super.connect().then(() => {
-            this.socket.on('scoreUpdate', (e) => {
-                this.renderer.updateScore(e);
+            this.socket.on('statusUpdate', (e) => {
+                this.renderer.updateStatus(e);
             });
 
             this.socket.on('disconnect', (e) => {

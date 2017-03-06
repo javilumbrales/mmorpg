@@ -9,20 +9,18 @@ class MMORPGServerEngine extends ServerEngine {
 
         this.serializer.registerClass(require('../common/Missile'));
         this.serializer.registerClass(require('../common/Character'));
-
-        this.scoreData = {};
     }
 
     start() {
         super.start();
-        //for (let x = 0; x < 3; x++) this.makeBot();
-
 
         this.gameEngine.on('killed', (e) => {
 
             console.log(`player killed: ${e.character.toString()}`);
             this.gameEngine.removeObjectFromWorld(e.character.id);
         });
+
+        this.players = {};
     }
 
     onPlayerConnected(socket) {
@@ -30,12 +28,10 @@ class MMORPGServerEngine extends ServerEngine {
 
         let makePlayerCharacter = () => {
             let character = this.gameEngine.makeCharacter(socket.playerId);
-
-            this.scoreData[character.id] = {
-                kills: 0,
-                name: nameGenerator('general')
-            };
-            this.updateScore();
+            character.name = nameGenerator('general');
+            let data = {"status": 'connected', "message": `Player connected: ${character.name}`, "data": {"id": character.id, "name":character.name}};
+            this.players[socket.playerId] = character.name;
+            this.updateStatus(data);
         };
 
         // handle client restart requests
@@ -49,33 +45,23 @@ class MMORPGServerEngine extends ServerEngine {
         for (let objId of Object.keys(this.gameEngine.world.objects)) {
             let obj = this.gameEngine.world.objects[objId];
             if (obj.playerId == playerId) {
-                // remove score data
-                if (this.scoreData[objId]) {
-                    delete this.scoreData[objId];
-                }
                 delete this.gameEngine.world.objects[objId];
             }
         }
+        let name = '';
+        if (this.players[playerId]) {
+            name = this.players[playerId];
+            delete this.players[playerId];
+        }
 
-        this.updateScore();
+        let data = {"status": 'disconnected', "message": `Player disconnected: ${name}`};
+        this.updateStatus(data);
     }
 
-    makeBot() {
-        let bot = this.gameEngine.makeCharacter(0);
-        bot.attachAI();
-
-        this.scoreData[bot.id] = {
-            kills: 0,
-            name: nameGenerator('general') + 'Bot'
-        };
-
-        this.updateScore();
-    }
-
-    updateScore() {
+    updateStatus(data) {
         // delay so player socket can catch up
         setTimeout(() => {
-            this.io.sockets.emit('scoreUpdate', this.scoreData);
+            this.io.sockets.emit('statusUpdate', data);
         }, 1000);
 
     }

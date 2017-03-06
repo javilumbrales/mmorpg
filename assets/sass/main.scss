@@ -147,7 +147,9 @@ button{
 	transition: all 0.5s ease-in;
 }
 
-.score{
+.status{
+	pointer-events: all;
+    overflow-y: auto;
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -158,23 +160,21 @@ button{
 	color: #fff;
 	font-family: arial, sans-serif;
 	opacity: 0;
+    background: gray;
 
 	transition: all 0.5s ease-in;
 
 	&:before{
-		content: "Kills";
+		content: "Status";
 		position: absolute;
 		top: -1.2rem;
 		left: 1rem;
 		font-size: 14px;
 		font-weight: bold;
-		opacity: 0.4;
+		opacity: 0.9;
 	}
 
 	.line{
-		position: absolute;
-		top: 0;
-		left: 1rem;
 		transition: all 0.2s ease-in;
 		transform: translateY(0);
 		opacity: 0.3;
@@ -305,8 +305,7 @@ h2{
 body.gameActive{
 	.hud { opacity: 0.3;}
 	.hp-bar { opacity: 0.6;}
-	//.target-hp-bar { opacity: 0.6;}
-	.score { opacity: 1;}
+	.status { opacity: 0.8;}
     .buttonsContainer { opacity: 0.6;}
 	.offscreenIndicator{ opacity: 0.8}
 	h2{
@@ -338,14 +337,8 @@ body.gameActive{
 	top: 0px;
 	left: 0;
 	width: 20rem;
-}
-
-#target-health-name {
-    width: 100%;
-    position:absolute;
-    text-align:center;
-    z-index:10;
-    top: 1px;
+	pointer-events: all;
+    cursor: pointer;
 }
 
 .target-hp-bar {
@@ -379,6 +372,14 @@ body.gameActive{
 	opacity: 0;
 
 	transition: all 0.5s ease-in;
+
+    .health-name {
+        width: 100%;
+        position:absolute;
+        text-align:center;
+        z-index:10;
+        top: 1px;
+    }
 
     .meter {
         height: 20px;  /* Can be anything */

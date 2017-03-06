@@ -35,13 +35,13 @@ class Character extends DynamicObject {
         this.class = Character;
         this.gameEngine = gameEngine;
         this.health = this.original_health = 100;
-        this.shield = 5;
+        this.shield = this.original_shield = 5;
         this.animation = 0;
         this.maxDistanceToTarget = 3;
 
         this.skills = {
             '1':{'duration': 100, 'action': {'health': 20}},
-            '2':{'duration': 50, 'action': {'attack': 20}},
+            '2':{'duration': 50, 'action': {'attack': 10}},
             '3':{'duration': 10000, 'action': {'shield': 4}},
         };
     };
