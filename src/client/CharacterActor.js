@@ -49,17 +49,11 @@ class CharacterActor{
 
     renderStep(position){
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.z)) {
-            //console.log("moved, updating position");
-            //console.log('current: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
-            ////this.mesh.position.x = position.x;
-            ////this.mesh.position.z = position.y;
-           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.y); //.scale(this.mesh.getScene().getAnimationRatio());
-            console.log('renderStep, delta movewithcollisions:', delta);
-           //this.mesh.moveWithCollisions(delta);
+           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.y);
+
            this.mesh.position.x = delta.x;
            this.mesh.position.y = delta.y;
            this.mesh.position.z = delta.z;
-            console.log('renderStep after: ' + this.mesh.position.x + ", " + this.mesh.position.y + ", " + this.mesh.position.z);
         }
     }
 
@@ -166,7 +160,7 @@ class CharacterActor{
                 this.mesh.dispose();
                 this.mesh = null;
                 resolve();
-            }, 3000);
+            }, 1000);
         });
     }
 

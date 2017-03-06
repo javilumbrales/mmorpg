@@ -62,11 +62,6 @@ class MMORPGGameEngine extends GameEngine {
     }
 
     moveToTarget(obj) {
-
-        //var movementVector=(new Point(target.x,target.y)).subtract(obj.x,obj.y);
-        //movementVector.setMagnitude(obj.maxSpeed);
-        //this.moveInDirecton(obj, movementVector);
-
         obj.isMoving = true;
         // Compute direction
         let direction = (new Point()).copyFrom(obj.destination).subtract(obj.x, obj.y);
@@ -94,7 +89,7 @@ class MMORPGGameEngine extends GameEngine {
 
                 // Destination has been reached
                 obj.isMoving = false;
-                console.log('arrived!');
+                console.log('Arrived to destination!');
                 obj.destination = null;
                 if (!obj.destinations) {
                     // Animate the character in idle animation
@@ -171,7 +166,6 @@ class MMORPGGameEngine extends GameEngine {
                     playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
                 }
                 playerCharacter.animation = 3;
-                console.log(playerCharacter.skills[3]['duration']);
                 setTimeout(function() {
                     playerCharacter.animation = 0;
                     playerCharacter.shield -= playerCharacter.skills[3]['action']['shield'];
@@ -180,8 +174,7 @@ class MMORPGGameEngine extends GameEngine {
                 console.log('new target', inputData.options);
                 playerCharacter.target = inputData.options.id;
             } else if (inputData.input == 'move') {
-                console.log("player moving to");
-                console.log(inputData);
+                console.log("player moving to", inputData);
                 playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
                 playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
             }

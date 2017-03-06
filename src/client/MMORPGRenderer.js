@@ -4,10 +4,9 @@ const BABYLON = require('babylonjs');
 const Renderer = require('incheon').render.Renderer;
 const Utils= require('./../common/Utils');
 
-const Missile = require('../common/Missile');
 const Character = require('../common/Character');
 const CharacterActor = require('./CharacterActor');
-const TreeGenerator = require('./TreeGenerator');
+//const TreeGenerator = require('./TreeGenerator');
 const randomColor = require('./randomColor');
 
 /**
@@ -118,9 +117,7 @@ class MMORPGRenderer extends Renderer {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.collisionsEnabled = true;
 
-        var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
-
-
+        //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
 
         // Create the camera
         //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);
@@ -240,7 +237,6 @@ class MMORPGRenderer extends Renderer {
 
 
         this.scene.render();
-
         // Center camera
         if (this.playerCharacter) {
             this.centerCamera(this.playerCharacter.position);
@@ -257,32 +253,8 @@ class MMORPGRenderer extends Renderer {
 
             if (objData) {
 
-                // if the object requests a "showThrust" then invoke it in the actor
-                if ((sprite !== this.playerCharacter) && sprite.actor) {
-                    //sprite.actor.thrustEmitter.emit = !!objData.showThrust;
-                }
-
-                if (objData.class == Character && sprite != this.playerCharacter) {
-                    this.updateOffscreenIndicator(objData);
-                }
-
                 sprite.x = objData.x;
                 sprite.y = objData.y;
-
-
-                //// make the wraparound seamless for objects other than the player ship
-                //if (sprite != this.playerCharacter && viewportSeesLeftBound && objData.x > this.viewportWidth - this.camera.x) {
-                    //sprite.x = objData.x - worldWidth;
-                //}
-                //if (sprite != this.playerCharacter && viewportSeesRightBound && objData.x < -this.camera.x) {
-                    //sprite.x = objData.x + worldWidth;
-                //}
-                //if (sprite != this.playerCharacter && viewportSeesTopBound && objData.y > this.viewportHeight - this.camera.y) {
-                    //sprite.y = objData.y - worldHeight;
-                //}
-                //if (sprite != this.playerCharacter && viewportSeesBottomBound && objData.y < -this.camera.y) {
-                    //sprite.y = objData.y + worldHeight;
-                //}
             }
 
             if (sprite) {
@@ -381,11 +353,6 @@ class MMORPGRenderer extends Renderer {
             this.playerCharacter = null;
         }
 
-        if (obj.class == Character && this.playerCharacter && obj.id != this.playerCharacter.id) {
-            this.removeOffscreenIndicator(obj);
-
-        }
-
         let sprite = this.sprites[obj.id];
         if (sprite.actor) {
             // removal "takes time"
@@ -407,58 +374,6 @@ class MMORPGRenderer extends Renderer {
         container.appendChild(indicatorEl);
     }
 
-    updateOffscreenIndicator(objData){
-        // player ship might have been destroyed
-        if (!this.playerCharacter) return;
-
-        let indicatorEl = document.querySelector('#offscreenIndicator' + objData.id);
-        if (!indicatorEl) {
-            console.error(`No indicatorEl found with id ${objData.id}`);
-            return;
-        }
-        let playerCharacterObj = this.gameEngine.world.objects[this.playerCharacter.id];
-        let slope = (objData.y - playerCharacterObj.y) / (objData.x - playerCharacterObj.x);
-        let b = this.viewportHeight/ 2;
-
-        // this.debug.clear();
-        // this.debug.lineStyle(1, 0xFF0000 ,1);
-        // this.debug.moveTo(this.viewportWidth/2,this.viewportHeight/2);
-        // this.debug.lineTo(this.viewportWidth/2 + b/-slope, 0);
-        // this.debug.endFill();
-
-        let padding = 30;
-        let indicatorPos = { x: 0, y: 0 };
-
-        if (objData.y < playerCharacterObj.y - this.viewportHeight/2) {
-            indicatorPos.x = this.viewportWidth/2 + (padding - b)/slope;
-            indicatorPos.y = padding;
-        } else if (objData.y > playerCharacterObj.y + this.viewportHeight/2) {
-            indicatorPos.x = this.viewportWidth/2 + (this.viewportHeight - padding - b)/slope;
-            indicatorPos.y = this.viewportHeight - padding;
-        }
-
-        if (objData.x < playerCharacterObj.x - this.viewportWidth/2) {
-            indicatorPos.x = padding;
-            indicatorPos.y = slope * (-this.viewportWidth/2 + padding) + b;
-        } else if (objData.x > playerCharacterObj.x + this.viewportWidth/2) {
-            indicatorPos.x = this.viewportWidth - padding;
-            indicatorPos.y = slope * (this.viewportWidth/2 - padding) + b;
-        }
-
-        if (indicatorPos.x == 0 && indicatorPos.y == 0){
-            indicatorEl.style.opacity = 0;
-        } else {
-            indicatorEl.style.opacity = 1;
-            let rotation = Math.atan2(objData.y - playerCharacterObj.y, objData.x - playerCharacterObj.x);
-            rotation = rotation * 180/Math.PI; // rad2deg
-            indicatorEl.style.transform = `translateX(${indicatorPos.x}px) translateY(${indicatorPos.y}px) rotate(${rotation}deg) `;
-        }
-    }
-
-    removeOffscreenIndicator(objData) {
-        let indicatorEl = document.querySelector('#offscreenIndicator'+objData.id);
-        indicatorEl.parentNode.removeChild(indicatorEl);
-    }
 
     updateHUD(data){
         if (data.RTT){ qs('.latencyData').innerHTML = data.RTT;}
@@ -466,7 +381,7 @@ class MMORPGRenderer extends Renderer {
     }
 
     updateStatus(data){
-        let statusContainer = qs('.status');
+        let statusContainer = qs('.status .updates');
         let statusEl = document.createElement('div');
         statusEl.classList.add('line');
         statusEl.classList.add('line-' + data['status']);
@@ -477,7 +392,6 @@ class MMORPGRenderer extends Renderer {
 
     onMouseClick(destination){
         if (this.playerCharacter) {
-            console.log('move character from ', this.playerCharacter.actor.mesh.position, 'to', destination);
             this.playerCharacter.actor.addDestination(destination);
             this.playerCharacter.actor.moveToNextDestination();
         }

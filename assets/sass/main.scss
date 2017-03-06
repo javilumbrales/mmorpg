@@ -149,7 +149,6 @@ button{
 
 .status{
 	pointer-events: all;
-    overflow-y: auto;
 	position: absolute;
 	bottom: 0;
 	left: 0;
@@ -163,6 +162,11 @@ button{
     background: gray;
 
 	transition: all 0.5s ease-in;
+
+    .updates {
+        overflow-y: auto;
+        height: inherit;
+    }
 
 	&:before{
 		content: "Status";
