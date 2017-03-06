@@ -152,12 +152,15 @@ class MMORPGGameEngine extends GameEngine {
                 playerCharacter.animation = 2;
                 if (playerCharacter.target) {
                     let attackTarget = this.world.objects[playerCharacter.target];
-                    let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
-                    if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
-                        attackTarget.health -= (10 - attackTarget.shield);
-                        console.log('attacking target!', attackTarget.health, attackTarget.original_health);
-                        if (attackTarget.health <= 0) {
-                            this.emit('killed', { "character": attackTarget });
+                    if (attackTarget) {
+                        let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
+                        if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
+                            attackTarget.health -= (10 - attackTarget.shield);
+                            console.log('attacking target!', attackTarget.health, attackTarget.original_health);
+                            if (attackTarget.health <= 0) {
+                                playerCharacter.target = null;
+                                this.emit('killed', { "character": attackTarget });
+                            }
                         }
                     }
                 }

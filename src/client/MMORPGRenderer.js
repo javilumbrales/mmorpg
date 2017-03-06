@@ -317,9 +317,14 @@ class MMORPGRenderer extends Renderer {
         this.emit('target', {"id": obj.id});
     }
     showTargetHeal(target) {
-        var health = document.querySelector('#target-health');
-        var currentHealth = target.health * 100 / target.original_health;
-        health.style.width = parseFloat(currentHealth) + '%';
+        if (target) {
+            var health = document.querySelector('#target-health');
+            var currentHealth = target.health * 100 / target.original_health;
+            health.style.width = parseFloat(currentHealth) + '%';
+        } else {
+            this.playerCharacter.target = null;
+            console.log('target not found, probably killed');
+        }
     }
 
     addObject(objData, options) {
