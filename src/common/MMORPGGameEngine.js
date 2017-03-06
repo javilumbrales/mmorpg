@@ -149,8 +149,8 @@ class MMORPGGameEngine extends GameEngine {
                 setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[1]['duration']);
                 console.log('healing', playerCharacter.health, playerCharacter.animation);
             } else if (inputData.input == 'attack') {
-                playerCharacter.animation = 2;
                 if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
+                    playerCharacter.animation = 2;
                     let attackTarget = this.world.objects[playerCharacter.target];
                     if (attackTarget) {
                         let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
@@ -192,12 +192,12 @@ class MMORPGGameEngine extends GameEngine {
      * Makes a new character, places it randomly and adds it to the game world
      * @return {Character} the added Character object
      */
-    makeCharacter(playerId) {
+    makeCharacter(playerId, name) {
         let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
         let newCharacterY = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
 
         // todo playerId should be called ownerId
-        let character = new Character(++this.world.idCount, this, newCharacterX, newCharacterY);
+        let character = new Character(++this.world.idCount, this, name, newCharacterX, newCharacterY);
         character.playerId = playerId;
         this.addObjectToWorld(character);
         console.log(`Character added: ${character.toString()}`);

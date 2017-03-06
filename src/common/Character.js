@@ -11,6 +11,7 @@ class Character extends DynamicObject {
         return Object.assign({
             health: { type: Serializer.TYPES.INT32 },
             animation: { type: Serializer.TYPES.INT32 },
+            name: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
 
@@ -18,22 +19,38 @@ class Character extends DynamicObject {
         return `${this.isBot?'Bot':'Player'}::Character::${super.toString()}`;
     }
 
+    setName(str) {
+        var buf = new ArrayBuffer(str.length*2);
+        var bufView = new Uint16Array(buf);
+        for (var i=0, strLen=str.length; i < strLen; i++) {
+            bufView[i] = str.charCodeAt(i);
+        }
+        this.name = bufView;
+    }
+
+    getName() {
+        return String.fromCharCode.apply(null, this.name);
+    }
+
     get bendingAngleLocalMultiple() { return 0.0; }
 
     copyFrom(sourceObj) {
         super.copyFrom(sourceObj);
         this.health = sourceObj.health;
+        this.name = sourceObj.name;
     }
 
     syncTo(other) {
         super.syncTo(other);
         this.health = other.health;
+        this.name = other.name;
     }
 
-    constructor(id, gameEngine, x, y) {
+    constructor(id, gameEngine, name, x, y) {
         super(id, x, y);
         this.class = Character;
         this.gameEngine = gameEngine;
+        name && this.setName(name);
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;
         this.animation = 0;
@@ -41,7 +58,7 @@ class Character extends DynamicObject {
 
         this.skills = {
             '1':{'duration': 100, 'action': {'health': 20}},
-            '2':{'duration': 50, 'action': {'attack': 10}},
+            '2':{'duration': 10, 'action': {'attack': 10}},
             '3':{'duration': 10000, 'action': {'shield': 4}},
         };
     };

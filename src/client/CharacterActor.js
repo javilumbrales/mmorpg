@@ -126,11 +126,7 @@ class CharacterActor{
         this.mesh.rotation.y = yaw ;
     }
 
-    changeName(name){
-        if (this.nameText != null){
-            this.nameText.dispose();
-        }
-
+    setName(name){
         var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 512, this.scene, true);
         dynamicTexture.hasAlpha = true;
         this.name = name;
@@ -178,7 +174,7 @@ class CharacterActor{
         if (this.shield) {
             return;
         }
-        console.log('animate shield');
+        this.renderer.updateStatus({"status": 'standard', "message":'Using Shield'});
         var cyl = BABYLON.Mesh.CreateSphere("shield", 4, 2, this.scene);
         var mat = new BABYLON.StandardMaterial("shield", this.scene);
         var tex = new BABYLON.Texture("assets/images/alphaCloud.png", this.scene);
@@ -192,8 +188,6 @@ class CharacterActor{
         cyl.parent = this.mesh;
         this.shield = cyl;
 
-        this.shieldAnimation = setInterval(animate.bind(this), 16);
-
         var i = 0;
         function animate() {
             i++;
@@ -206,6 +200,7 @@ class CharacterActor{
                 this.shield = null;
             }
         }
+        this.shieldAnimation = setInterval(animate.bind(this), 16);
     }
 
     showHeal() {
@@ -217,6 +212,8 @@ class CharacterActor{
         if (this.healing) {
             return;
         }
+        this.renderer.updateStatus({"status": 'standard', "message":'Using Heal'});
+
         var selectTexture = new BABYLON.DynamicTexture("selectTexture", 512, this.scene, true);
         var context = selectTexture._context;
         var invertY = true;
@@ -264,8 +261,8 @@ class CharacterActor{
             //ground.scaling.x = ground.scaling.z = 0.9 + 0.2 * Math.sin(frame/5);
             frame++;
 
-            if (j > 1000) {
-                clearInterval(this.shieldAnimation);
+            if (j > 100) {
+                clearInterval(this.healAnimation);
                 for (var g of ground) {
                     g.dispose()
                 };
@@ -273,7 +270,7 @@ class CharacterActor{
             }
         }
 
-        this.shieldAnimation = setInterval(update.bind(this), 20);
+        this.healAnimation = setInterval(update.bind(this), 20);
 
     }
 

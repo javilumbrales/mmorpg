@@ -93,7 +93,6 @@ class MMORPGRenderer extends Renderer {
         for (let i = 0; i < skills.length; i++) {
             skills[i].addEventListener('click', (e) => {
                 let action = e.currentTarget.attributes['class'].value.replace('skill', '').trim();
-                //console.log(action);
                 this.emit(action);
             });
         }
@@ -297,6 +296,7 @@ class MMORPGRenderer extends Renderer {
                             if (objData.animation == 1) {
                                 this.playerCharacter.actor.animateHeal();
                             } else if (objData.animation == 2) {
+                                this.updateStatus({"status": 'standard', "message":'Attacking target!'});
                             } else if (objData.animation == 3) {
                                 this.playerCharacter.actor.animateShield();
                             }
@@ -337,6 +337,7 @@ class MMORPGRenderer extends Renderer {
             this.sprites[objData.id] = mesh;
             mesh.id = objData.id;
             mesh.data = objData;
+            characterActor.setName(objData.getName());
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship
@@ -389,7 +390,6 @@ class MMORPGRenderer extends Renderer {
         if (sprite.actor) {
             // removal "takes time"
             sprite.actor.destroy().then(()=>{
-                console.log('deleted sprite');
                 delete this.sprites[obj.id];
             });
         } else{
@@ -466,12 +466,10 @@ class MMORPGRenderer extends Renderer {
     }
 
     updateStatus(data){
-        if (data['status'] == 'connected' && data['data']['id'] == this.playerCharacter.id) {
-            this.playerCharacter.actor.changeName(data['data']['name']);
-        }
         let statusContainer = qs('.status');
         let statusEl = document.createElement('div');
         statusEl.classList.add('line');
+        statusEl.classList.add('line-' + data['status']);
         statusEl.innerHTML = data['message'];
         statusContainer.appendChild(statusEl);
         statusContainer.scrollTop = statusContainer.scrollHeight;
