@@ -13,7 +13,6 @@ class CharacterActor{
         this.mesh.position.y=0;
         this.mesh.checkCollisions = true;
         this.mesh.ellipsoid = new BABYLON.Vector3(0.1, 0.1, 0.1);
-
         //this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 0.5, 0);
 
         this.scene = renderer.scene;
@@ -47,7 +46,7 @@ class CharacterActor{
         this.mesh.actor = this;
     }
 
-    renderStep(position){
+    renderStep(position) {
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.z)) {
            let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.y);
 
@@ -221,7 +220,6 @@ class CharacterActor{
         context.fill();
         context.lineWidth = 30;
         context.strokeStyle = 'rgb(0, 255, 0)';;
-        //context.setLineDash([60, 55]);
         context.stroke();
         selectTexture.update(invertY);
 
@@ -269,6 +267,5 @@ class CharacterActor{
     }
 
 }
-
 
 module.exports = CharacterActor;

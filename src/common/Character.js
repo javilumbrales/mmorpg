@@ -16,7 +16,7 @@ class Character extends DynamicObject {
     }
 
     toString() {
-        return `${this.isBot?'Bot':'Player'}::Character::${super.toString()}`;
+        return `Player::Character::${super.toString()}`;
     }
 
     setName(str) {

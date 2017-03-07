@@ -14,26 +14,11 @@ const randomColor = require('./randomColor');
  */
 class MMORPGRenderer extends Renderer {
 
-    get ASSETPATHS(){
-        return {
-            ship: 'assets/ship1.png',
-            missile: 'assets/shot.png',
-            bg1: 'assets/space3.png',
-            bg2: 'assets/space2.png',
-            bg3: 'assets/clouds2.png',
-            bg4: 'assets/clouds1.png',
-            smokeParticle: 'assets/smokeparticle.png'
-        };
-    }
-
     // TODO: document
     constructor(gameEngine, clientEngine) {
         super(gameEngine, clientEngine);
         this.sprites = {};
         this.isReady = false;
-
-        // asset prefix
-        this.assetPathPrefix = this.gameEngine.options.assetPathPrefix?this.gameEngine.options.assetPathPrefix:'';
 
         // these define how many gameWorlds the player ship has "scrolled" through
         this.bgPhaseX = 0;
@@ -329,14 +314,6 @@ class MMORPGRenderer extends Renderer {
                 this.addOffscreenIndicator(objData);
             }
 
-        } else if (objData.class == Missile) {
-            sprite = new PIXI.Sprite(PIXI.loader.resources.missile.texture);
-            this.sprites[objData.id] = sprite;
-
-            sprite.width = 81 * 0.5;
-            sprite.height = 46 * 0.5;
-
-            sprite.anchor.set(0.5, 0.5);
         }
 
         mesh.position.x = objData.x;

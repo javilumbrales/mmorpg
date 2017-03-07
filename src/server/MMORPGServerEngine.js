@@ -23,7 +23,6 @@ class MMORPGServerEngine extends ServerEngine {
                 return String.fromCharCode.apply(null, new Uint16Array(bufferOffset));
             }
         });
-        this.serializer.registerClass(require('../common/Missile'));
         this.serializer.registerClass(require('../common/Character'));
     }
 

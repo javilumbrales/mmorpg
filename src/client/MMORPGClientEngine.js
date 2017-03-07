@@ -15,7 +15,6 @@ class MMORPGClientEngine extends ClientEngine {
         this.renderer = new MMORPGRenderer(gameEngine, this);
 
         this.serializer.registerClass(require('../common/Character'));
-        this.serializer.registerClass(require('../common/Missile'));
 
         this.gameEngine.on('client__preStep', this.preStep.bind(this));
     }
@@ -73,23 +72,6 @@ class MMORPGClientEngine extends ClientEngine {
                 this.sendInput('target', e);
             });
 
-        });
-
-        // allow a custom path for sounds
-        let assetPathPrefix = this.options.assetPathPrefix ? this.options.assetPathPrefix : '';
-
-        // handle sounds
-        this.sounds = {
-            missileHit: new Howl({ src: [assetPathPrefix + 'assets/audio/193429__unfa__projectile-hit.mp3'] }),
-            fireMissile: new Howl({ src: [assetPathPrefix + 'assets/audio/248293__chocobaggy__weird-laser-gun.mp3'] })
-        };
-
-        this.gameEngine.on('fireMissile', () => { this.sounds.fireMissile.play(); });
-        this.gameEngine.on('missileHit', () => {
-            // don't play explosion sound if the player is not in game
-            if (this.renderer.playerCharacter) {
-                this.sounds.missileHit.play();
-            }
         });
 
         this.networkMonitor.on('RTTUpdate', (e) => {

@@ -2,7 +2,6 @@
 
 const GameEngine = require('incheon').GameEngine;
 const Point = require('incheon').Point;
-const Missile= require('./Missile');
 const Character = require('./Character');
 const Timer = require('./Timer');
 
@@ -29,15 +28,15 @@ class MMORPGGameEngine extends GameEngine {
         this.on('collisionStart', function(e) {
             let collisionObjects = Object.keys(e).map(k => e[k]);
             let character = collisionObjects.find(o => o.class === Character);
-            let missile = collisionObjects.find(o => o.class === Missile);
+            let missile = null; //collisionObjects.find(o => o.class === Missile);
 
             if (!character || !missile)
                 return;
 
-            if (missile.shipOwnerId !== character.id) {
-                that.destroyMissile(missile.id);
-                that.emit('missileHit', { missile, character });
-            }
+            //if (missile.shipOwnerId !== character.id) {
+            //    that.destroyMissile(missile.id);
+            //    that.emit('missileHit', { missile, character });
+            //}
         });
 
         this.on('postStep', this.afterStep.bind(this));
