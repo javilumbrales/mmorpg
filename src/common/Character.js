@@ -9,9 +9,10 @@ class Character extends DynamicObject {
 
     static get netScheme() {
         return Object.assign({
+            z: { type: Serializer.TYPES.INT16 },
             health: { type: Serializer.TYPES.INT32 },
-            animation: { type: Serializer.TYPES.INT32 },
-            name: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
+            shield: { type: Serializer.TYPES.INT32 },
+            animations: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
 
@@ -19,49 +20,50 @@ class Character extends DynamicObject {
         return `Player::Character::${super.toString()}`;
     }
 
-    setName(str) {
-        var buf = new ArrayBuffer(str.length*2);
-        var bufView = new Uint16Array(buf);
-        for (var i=0, strLen=str.length; i < strLen; i++) {
-            bufView[i] = str.charCodeAt(i);
-        }
-        this.name = bufView;
-    }
-
-    getName() {
-        return String.fromCharCode.apply(null, this.name);
-    }
-
     get bendingAngleLocalMultiple() { return 0.0; }
 
     copyFrom(sourceObj) {
         super.copyFrom(sourceObj);
+        this.z = sourceObj.z;
         this.health = sourceObj.health;
+        this.shield = sourceObj.shield;
         this.name = sourceObj.name;
+        this.animations = sourceObj.animations;
     }
 
     syncTo(other) {
         super.syncTo(other);
+        this.z = other.z;
         this.health = other.health;
+        this.shield = other.shield;
         this.name = other.name;
+        this.animations = other.animations;
     }
 
-    constructor(id, gameEngine, name, x, y) {
+    constructor(id, gameEngine, x, y, z) {
         super(id, x, y);
         this.class = Character;
+        this.z = z;
         this.gameEngine = gameEngine;
-        name && this.setName(name);
+
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;
-        this.animation = 0;
+        this.animations = [];
         this.maxDistanceToTarget = 3;
 
         this.skills = {
-            '1':{'duration': 100, 'action': {'health': 20}},
-            '2':{'duration': 10, 'action': {'attack': 10}},
-            '3':{'duration': 10000, 'action': {'shield': 4}},
+            '1':{'duration': 1, 'action': {'param': 'attack', 'act':10, 'deact':0}},
+            '2':{'duration': 100, 'action': {'param': 'heal', 'act': 4, 'deact': 0}},
+            '3':{'duration': 1000, 'action': {'param': 'shield', 'act': 4, 'deact': -4}},
         };
+
+        this.running = {};
     };
+
+    applySkill(id, activate) {
+        let skill = this.skills[id]['action'];
+        this[skill['param']] = this[skill['param']] + activate ? skill['act'] : skill['deact'];
+    }
 
     destroy() {
         if (this.onPreStep){

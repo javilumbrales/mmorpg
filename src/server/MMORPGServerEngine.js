@@ -1,28 +1,11 @@
 'use strict';
 
 const ServerEngine = require('incheon').ServerEngine;
-const nameGenerator = require('./NameGenerator');
 
 class MMORPGServerEngine extends ServerEngine {
     constructor(io, gameEngine, inputOptions) {
         super(io, gameEngine, inputOptions);
 
-        this.serializer.addCustomType({
-            "type":"String",
-            "writeDataView": function(dataview, value, bufferOffset) {
-                console.log('hola');
-                var bufView = new Uint16Array(value.length * 2);
-                for (var i=0, strLen=value.length; i<strLen; i++) {
-                    bufView[i] = value.charCodeAt(i);
-                }
-                dataview.setUint16(bufferOffset, bufView);
-                console.log('done');
-            },
-            "readDataView": function(dataview, bufferOffset) {
-                console.log('hola read');
-                return String.fromCharCode.apply(null, new Uint16Array(bufferOffset));
-            }
-        });
         this.serializer.registerClass(require('../common/Character'));
     }
 
@@ -32,7 +15,7 @@ class MMORPGServerEngine extends ServerEngine {
         this.gameEngine.on('killed', (e) => {
 
             console.log(`player killed: ${e.character.toString()}`);
-            this.updateStatus({"status":"standard", "message": `RIP: ${e.character.getName()}`});
+            this.updateStatus({"status":"standard", "message": `RIP: ${e.character.name}`});
             this.gameEngine.removeObjectFromWorld(e.character.id);
         });
 
@@ -43,10 +26,14 @@ class MMORPGServerEngine extends ServerEngine {
         super.onPlayerConnected(socket);
 
         let makePlayerCharacter = () => {
-            let character = this.gameEngine.makeCharacter(socket.playerId, nameGenerator('general'));
-            let name = character.getName();
-            this.players[socket.playerId] = name;
-            this.updateStatus({"status": 'connected', "message": `Player connected: ${name}`});
+            console.log('make player');
+            let names = ["Valanar", "p0w3rf1y", "Rins", "Malaga", "Pepito"];
+            let character = this.gameEngine.makeCharacter(socket.playerId, names[Math.floor(Math.random() * names.length)]);
+            this.players[socket.playerId] = character.name;
+            this.updateStatus({"status": 'connected', "message": `Player connected: ${character.name}`});
+            setTimeout(() => {
+                this.io.sockets.emit('connectedPlayers', this.players);
+            }, 1500);
         };
 
         // handle client restart requests

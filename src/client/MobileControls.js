@@ -13,81 +13,32 @@ class MobileControls{
         this.touchContainer = document.querySelector('#renderCanvas');
         this.setupListeners();
         this.destinations = [];
-
-        let onRequestAnimationFrame = () => {
-            this.handleMovementInput();
-            window.requestAnimationFrame(onRequestAnimationFrame);
-        };
-
-        onRequestAnimationFrame();
-
     }
 
     setupListeners(){
-        let touchHandler = (e) => {
-            // If there's exactly one finger inside this element
-            let touch = e.targetTouches[0];
-            this.currentTouch = {
-                x: touch.pageX,
-                y: touch.pageY
-            };
 
-            if (e.type === 'touchstart' && e.targetTouches[1]){
-                this.emit('fire');
+        document.addEventListener("touchend", (evt)=> {
+            this.touchEnd(evt);
+        });
+    }
+    touchEnd(e) {
+        if (e.target.id != 'renderCanvas') {
+            return;
+        }
+
+        var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY,  function(mesh) {
+            return mesh.isPickable && mesh.isEnabled()
+        });
+        if (this.renderer.playerCharacter && pickResult.pickedPoint) {
+            if (pickResult.pickedMesh.name == 'player') {
+                this.renderer.setTarget(pickResult.pickedMesh.parent);
             }
-        };
 
-        this.renderer.scene.onPointerDown = (evt, pr) => {
-            evt.preventDefault();
-            let destination = pr.pickedPoint.clone();
-            destination.y = 0;
-            this.destinations.push(destination);
-            this.renderer.onMouseClick(destination);
-        };
-    }
+            this.destinations.push(pickResult.pickedPoint);
+            this.renderer.playerCharacter.actor.destination = pickResult.pickedPoint;
 
-    handleMovementInput(){
-        // no touch, no movement
-        if (!this.currentTouch) return;
-
-        // by default no touch
-        this.activeInput.right = false;
-        this.activeInput.left = false;
-        this.activeInput.up = false;
-
-        let playerShip = this.renderer.playerShip;
-        // no player ship, no movement
-        if (!playerShip) return;
-
-        let playerShipScreenCoords = this.renderer.gameCoordsToScreen(playerShip);
-
-        let dx = this.currentTouch.x - playerShipScreenCoords.x;
-        let dy = this.currentTouch.y - playerShipScreenCoords.y;
-        let shortestArc = Utils.shortestArc(Math.atan2(dx, -dy),
-            Math.atan2(Math.sin(playerShip.actor.shipContainerSprite.rotation + Math.PI / 2), Math.cos(playerShip.actor.shipContainerSprite.rotation + Math.PI / 2)));
-
-        let rotateThreshold = 0.3;
-        let distanceThreshold = 120;
-
-        // turn left or right
-        if (shortestArc > rotateThreshold){
-            this.activeInput.left = true;
-            this.activeInput.right = false;
-        } else if (shortestArc < -rotateThreshold) {
-            this.activeInput.right = true;
-            this.activeInput.left = false;
         }
-
-        // don't turn if too close
-        if (Math.sqrt(dx * dx + dy * dy) > distanceThreshold) {
-            this.activeInput.up = true;
-            this.renderer.onKeyChange({ keyName: 'up', isDown: true });
-        } else {
-            this.renderer.onKeyChange({ keyName: 'up', isDown: false });
-        }
-
     }
-
 }
 
 module.exports = MobileControls;

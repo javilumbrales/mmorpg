@@ -23,6 +23,10 @@ class MMORPGClientEngine extends ClientEngine {
 
         super.start();
 
+        this.gameEngine.on('attacking', (data) => {
+            console.log('received attacking');
+            this.updateStatus({"status": 'standard', "message": data.msg});
+        });
         // handle gui for game condition
         this.gameEngine.on('objectDestroyed', (obj) => {
             if (obj.class == Character && this.isOwnedByPlayer(obj)) {
@@ -84,6 +88,9 @@ class MMORPGClientEngine extends ClientEngine {
         return super.connect().then(() => {
             this.socket.on('statusUpdate', (e) => {
                 this.renderer.updateStatus(e);
+            });
+            this.socket.on('connectedPlayers', (e) => {
+                this.renderer.setNames(e);
             });
 
             this.socket.on('disconnect', (e) => {

@@ -12,29 +12,64 @@ class MouseControls{
         Object.assign(this, EventEmitter.prototype);
         this.renderer = renderer;
 
-
         this.setupListeners();
 
         this.destinations = [];
 
     }
 
-    setupListeners(){
-        this.renderer.scene.onPointerDown = (evt, pr) => {
-            evt.preventDefault();
-            this.onMouseClick(evt, pr);
-        };
+    setupListeners() {
+
+        document.addEventListener("click", (evt)=> {
+            this.mouseClick(evt);
+        });
+
+        document.addEventListener("mousemove", ()=> {
+            this.mouseMove();
+        });
     }
 
-    onMouseClick(e, pr) {
-        if (pr.hit) {
-            let destination = pr.pickedPoint.clone();
-            destination.y = 0;
-            //destination.y += 1;
-            this.destinations.push(destination);
-            this.renderer.onMouseClick(destination);
+    mouseMove() {
+        // LookAt character if mouse over ground
+        var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY, function (mesh) {
+            //console.log(mesh);
+            return mesh.name == 'extraGround';
+        });
+        if (this.renderer.playerCharacter && pickResult.hit) {
+            var targetPoint = pickResult.pickedPoint.clone();
+            this.renderer.cursor.position = targetPoint.clone();
+            targetPoint.y = this.renderer.playerCharacter.position.y;
+            this.renderer.playerCharacter.lookAt(targetPoint);
         }
 
+        var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY, function (mesh) {
+            return mesh.name == 'player';
+        });
+
+            if (pickResult.hit) {
+                document.body.style.cursor = "pointer";
+            } else {
+                document.body.style.cursor = "default";
+            }
+    }
+
+    mouseClick(e) {
+        if (e.target.id != 'renderCanvas') {
+            return;
+        }
+
+        var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY,  function(mesh) {
+            return mesh.isPickable && mesh.isEnabled()
+        });
+        if (this.renderer.playerCharacter && pickResult.pickedPoint) {
+            if (pickResult.pickedMesh.name == 'player') {
+                this.renderer.setTarget(pickResult.pickedMesh.parent);
+            }
+
+            this.destinations.push(pickResult.pickedPoint);
+            this.renderer.playerCharacter.actor.destination = pickResult.pickedPoint;
+
+        }
     }
 }
 

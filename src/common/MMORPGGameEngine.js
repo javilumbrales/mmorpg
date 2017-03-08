@@ -10,13 +10,29 @@ class MMORPGGameEngine extends GameEngine {
 
     start() {
         let that = this;
-        this.Epsilon = 0.1;
         super.start();
 
         this.timer = new Timer();
         this.timer.play();
         this.on('server__postStep', ()=>{
             this.timer.tick();
+            for (let objId of Object.keys(this.world.objects)) {
+                let o = this.world.objects[objId];
+                if (o.animations && o.animations.length) {
+                    for(var a = 0; a <o.animations.length; a++) {
+                        o.running[o.animations[a]]--;
+                        if (o.running[o.animations[a]] <=0) {
+                            o.applySkill(o.animations[a], false);
+                            delete o.running[o.animations[a]];
+                            o.animations.splice(a, 1);
+                        }
+                    }
+                }
+                if (o.destination) {
+                    console.log(`Moving ${o.id} to: ${o.destination}`);
+                    this.moveToTarget(o);
+                }
+            }
         });
 
         this.worldSettings = {
@@ -24,6 +40,84 @@ class MMORPGGameEngine extends GameEngine {
             width: 500,
             height: 500
         };
+        this.Epsilon = 0.1;
+        this.animations = {
+            'attack': 1,
+            'heal': 2,
+            'shield': 3
+        };
+
+        this.on('server__inputReceived', (data)=>{
+
+
+        let playerCharacter = this.getPlayerCharacter(data.playerId);
+
+        if (playerCharacter) {
+            let inputData = data.input, id;
+            switch (inputData.input) {
+                case 'move':
+                    console.log("Player moving to", inputData);
+                    playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
+                    playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
+                    break;
+                case 'attack':
+                    id = this.animations[inputData.input];
+                    if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
+                        let attackTarget = this.world.objects[playerCharacter.target];
+                        if (attackTarget) {
+                            let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.z), new Point(attackTarget.x, attackTarget.z));
+                            console.log('Player position:', playerCharacter.x, playerCharacter.y, playerCharacter.z);
+                            console.log('Target position:', attackTarget.x, attackTarget.y, attackTarget.z);
+                            if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
+                                let damage = (playerCharacter.skills[id]['action']['act'] - attackTarget.shield);
+                                attackTarget.health -= damage;
+                                console.log('attacking target!', attackTarget.health, attackTarget.original_health);
+                                this.emit('attacking', { "msg": 'Attacking ' + attackTarget.name + ' damage done ' + damage});
+                                if (attackTarget.health <= 0) {
+                                    playerCharacter.target = null;
+                                    this.emit('killed', { "character": attackTarget });
+                                }
+                            } else {
+                                console.log('cannot attack target!', distanceToTarget);
+                                this.emit('attacking', { "msg": 'Target too far ' + distanceToTarget});
+                            }
+                        }
+                    }
+                    break;
+                case 'shield':
+                    id = this.animations[inputData.input];
+                    playerCharacter.animations.push(id);
+                    console.log('activating ' + inputData.input);
+                    if (playerCharacter.shield == playerCharacter.original_shield) {
+                        playerCharacter.applySkill(id, true);
+                    }
+                    playerCharacter.running[id] = playerCharacter.skills[id]['duration'];
+                        //setTimeout(function() {
+                            //playerCharacter.animation = 0;
+                            //playerCharacter.shield -= playerCharacter.skills[id]['action']['shield'];
+                        //}.bind(this), playerCharacter.skills[3]['duration']);
+                    //}});
+                    break;
+                case 'heal':
+                    id = this.animations[inputData.input];
+                    playerCharacter.animations.push(id);
+                    console.log('activating ' + inputData.input);
+                    if (playerCharacter.health < playerCharacter.original_health) {
+                        playerCharacter.applySkill(id, true);
+                    }
+                    playerCharacter.running[id] = playerCharacter.skills[id]['duration'];
+                    console.log(playerCharacter.skills[id], playerCharacter.running[id]);
+                    break;
+                case 'target':
+                    console.log('new target', inputData.options);
+                    playerCharacter.target = inputData.options.id;
+                    break;
+                default:
+                    console.log('uknown action', inputData.input);
+
+            }
+        }
+        });
 
         this.on('collisionStart', function(e) {
             let collisionObjects = Object.keys(e).map(k => e[k]);
@@ -39,31 +133,13 @@ class MMORPGGameEngine extends GameEngine {
             //}
         });
 
-        this.on('postStep', this.afterStep.bind(this));
+        //this.on('postStep', this.afterStep.bind(this));
     };
-
-    /**
-     * Disable animations after the step
-     */
-    afterStep(postStepEv) {
-        if (postStepEv.isReenact)
-            return;
-
-        for (let objId of Object.keys(this.world.objects)) {
-            let o = this.world.objects[objId];
-            if (Number.isInteger(o.animation) && o.animation == 20) {
-                //o.animation = 0;
-            }
-            if (o.destination) {
-                this.moveToTarget(o);
-            }
-        }
-    }
 
     moveToTarget(obj) {
         obj.isMoving = true;
         // Compute direction
-        let direction = (new Point()).copyFrom(obj.destination).subtract(obj.x, obj.y);
+        let direction = (new Point()).copyFrom(obj.destination).subtract(obj.x, obj.z);
         direction.normalize();
         this.moveInDirecton(obj, direction);
     }
@@ -79,12 +155,12 @@ class MMORPGGameEngine extends GameEngine {
         // If a destination has been set and the character has not been stopped
         if (obj.isMoving && obj.destination) {
             // Compute distance to destination
-            var distance = this.distance(new Point(obj.x, obj.y), obj.destination);
+            var distance = this.distance(new Point(obj.x, obj.z), obj.destination);
             // Change destination if th distance is increasing (should not)
             if (distance < this.Epsilon || distance > obj._lastDistance) {
                 // Set the minion position to the curent destination
                 obj.x = obj.destination.x;
-                obj.y = obj.destination.y;
+                obj.z = obj.destination.y;
 
                 // Destination has been reached
                 obj.isMoving = false;
@@ -111,18 +187,14 @@ class MMORPGGameEngine extends GameEngine {
                 //console.log(velocityAndGravity);
                 //obj.mesh.moveWithCollisions(velocityAndGravity);
                 obj.x += delta.x;
-                obj.y += delta.y;
+                obj.z += delta.y;
+                console.log('moved to', obj.x, obj.y, obj.z);
             }
         }
     }
 
-    processInput(inputData, playerId) {
-
-        super.processInput(inputData, playerId);
-
-        // get the player ship tied to the player socket
+    getPlayerCharacter(playerId) {
         let playerCharacter;
-
         for (let objId in this.world.objects) {
             let o = this.world.objects[objId];
             if (o.playerId == playerId && o.class == Character) {
@@ -130,54 +202,12 @@ class MMORPGGameEngine extends GameEngine {
                 break;
             }
         }
+        return playerCharacter;
+    }
 
-        if (playerCharacter) {
-            if (inputData.input == 'up') {
-                //playerCharacter.isAccelerating = true;
-                playerCharacter.y += 1;
-            } else if (inputData.input == 'heal') {
-                if (playerCharacter.health < playerCharacter.original_health) {
-                    playerCharacter.health += playerCharacter.skills[1]['action']['health'];
-                }
-                playerCharacter.animation = 1;
-                setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[1]['duration']);
-                console.log('healing', playerCharacter.health, playerCharacter.animation);
-            } else if (inputData.input == 'attack') {
-                if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
-                    playerCharacter.animation = 2;
-                    let attackTarget = this.world.objects[playerCharacter.target];
-                    if (attackTarget) {
-                        let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.y), new Point(attackTarget.x, attackTarget.y));
-                        if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
-                            attackTarget.health -= (playerCharacter.skills[2]['action']['attack'] - attackTarget.shield);
-                            console.log('attacking target!', attackTarget.health, attackTarget.original_health);
-                            if (attackTarget.health <= 0) {
-                                playerCharacter.target = null;
-                                this.emit('killed', { "character": attackTarget });
-                            }
-                        }
-                    }
-                    setTimeout(function() {playerCharacter.animation = 0;}.bind(this), playerCharacter.skills[2]['duration']);
-                }
-            } else if (inputData.input == 'shield') {
-                console.log('activating shield');
-                if (playerCharacter.shield == playerCharacter.original_shield) {
-                    playerCharacter.shield += playerCharacter.skills[3]['action']['shield'];
-                }
-                playerCharacter.animation = 3;
-                setTimeout(function() {
-                    playerCharacter.animation = 0;
-                    playerCharacter.shield -= playerCharacter.skills[3]['action']['shield'];
-                }.bind(this), playerCharacter.skills[3]['duration']);
-            } else if (inputData.input == 'target') {
-                console.log('new target', inputData.options);
-                playerCharacter.target = inputData.options.id;
-            } else if (inputData.input == 'move') {
-                console.log("player moving to", inputData);
-                playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
-                playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
-            }
-        }
+    processInput(inputData, playerId) {
+
+        super.processInput(inputData, playerId);
     };
 
     /**
@@ -186,10 +216,12 @@ class MMORPGGameEngine extends GameEngine {
      */
     makeCharacter(playerId, name) {
         let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
-        let newCharacterY = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
+        let newCharacterY = 0;
+        let newCharacterZ = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
 
         // todo playerId should be called ownerId
-        let character = new Character(++this.world.idCount, this, name, newCharacterX, newCharacterY);
+        let character = new Character(++this.world.idCount, this, newCharacterX, newCharacterY, newCharacterZ);
+        character.name = name;
         character.playerId = playerId;
         this.addObjectToWorld(character);
         console.log(`Character added: ${character.toString()}`);

@@ -17,7 +17,7 @@ class MMORPGRenderer extends Renderer {
     // TODO: document
     constructor(gameEngine, clientEngine) {
         super(gameEngine, clientEngine);
-        this.sprites = {};
+        this.meshes = {};
         this.isReady = false;
 
         // these define how many gameWorlds the player ship has "scrolled" through
@@ -36,16 +36,6 @@ class MMORPGRenderer extends Renderer {
         //}
 
         return new Promise((resolve, reject)=>{
-            //PIXI.loader.add(Object.keys(this.ASSETPATHS).map((x)=>{
-                //return{
-                    //name: x,
-                    //url: this.assetPathPrefix + this.ASSETPATHS[x]
-                //};
-            //}))
-            //.load(() => {
-                //this.isReady = true;
-                //this.initScene();
-                //
             setTimeout(function(){
                 this.gameEngine.emit('renderer.ready');
 
@@ -59,7 +49,6 @@ class MMORPGRenderer extends Renderer {
 
                 resolve();
             }.bind(this), 500);
-            //});
         });
     }
 
@@ -75,9 +64,10 @@ class MMORPGRenderer extends Renderer {
         let skills = document.querySelectorAll('.skill');
 
         for (let i = 0; i < skills.length; i++) {
-            skills[i].addEventListener('click', (e) => {
+            skills[i].addEventListener('mousedown', (e) => {
                 let action = e.currentTarget.attributes['class'].value.replace('skill', '').trim();
                 this.emit(action);
+                e.preventDefault();
             });
         }
         document.querySelector('#cancel-target').addEventListener('click', (e) => {
@@ -112,6 +102,9 @@ class MMORPGRenderer extends Renderer {
         camera.wheelPrecision *= 10;
 
         this.camera = camera;
+
+        // helper object to show current position of cursor in 3d space
+        this.cursor = BABYLON.Mesh.CreateBox('cursor', 0.3, this.scene);
 
         // Create light
         //let light = new BABYLON.PointLight("light", new BABYLON.Vector3(0,5,-5), this.scene);
@@ -170,12 +163,12 @@ class MMORPGRenderer extends Renderer {
         //this.scene.fogColor = new BABYLON.Color3(0.8,0.83,0.8);
 
         // The trunk color
+
+        /*
         var trunkColor = randomColor({hue: 'orange',luminosity: 'dark', format: 'rgbArray'});
         let trunkMaterial = new BABYLON.StandardMaterial("trunk", this.scene);
         trunkMaterial.diffuseColor = BABYLON.Color3.FromInts(trunkColor[0],trunkColor[1],trunkColor[2]);
         trunkMaterial.specularColor = BABYLON.Color3.Black();
-
-        /*
         for (var i = 0; i < 50; i++) {
             // The color of the foliage
             var branchColor = randomColor({hue: 'green', luminosity: 'darl', format: 'rgbArray'});
@@ -232,33 +225,31 @@ class MMORPGRenderer extends Renderer {
             this.playerCharacter.actor.showHeal();
         }
 
-        for (let objId of Object.keys(this.sprites)) {
+        for (let objId of Object.keys(this.meshes)) {
             let objData = this.gameEngine.world.objects[objId];
-            let sprite = this.sprites[objId];
+            let sprite = this.meshes[objId];
 
             if (objData) {
 
                 sprite.x = objData.x;
                 sprite.y = objData.y;
+                sprite.z = objData.z;
             }
 
             if (sprite) {
                 if (sprite.actor && sprite.actor.renderStep) {
                     // TODO: FIX THIS
                     if (objData && !this.clientEngine.isOwnedByPlayer(objData)) {
-                        sprite.actor.renderStep({"x":sprite.x, "y": sprite.y});
+                        sprite.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                     } else if (objData) {
-                        //console.log(objData, objData.animation);
-                        if (objData.animation) {
-                            if (objData.animation == 1) {
+                        let a;
+                        while(a = objData.animations.shift()) {
+                            if (a == 2) {
                                 this.playerCharacter.actor.animateHeal();
-                            } else if (objData.animation == 2) {
-                                this.updateStatus({"status": 'standard', "message":'Attacking target!'});
-                            } else if (objData.animation == 3) {
+                            } else if (a == 3) {
                                 this.playerCharacter.actor.animateShield();
                             }
                         }
-
                     }
                 }
             }
@@ -285,16 +276,35 @@ class MMORPGRenderer extends Renderer {
         }
     }
 
+    setNames(data, retrying) {
+        console.log('Setting names for', data);
+        for (let id in data) {
+            if (data.hasOwnProperty(id)) {
+                let player = this.gameEngine.getPlayerCharacter(id);
+                let mesh = player ? this.meshes[player.id] : null;
+                if (mesh && mesh.actor) {
+                    mesh.actor.setName(data[id]);
+                    delete data[id];
+                }
+            }
+        }
+
+        if (Object.keys(data).length && !retrying) {
+            setTimeout(function(){
+                this.setNames(data);
+            }.bind(this), 500);
+        }
+    }
+
     addObject(objData, options) {
         let mesh;
 
         if (objData.class == Character) {
             let characterActor = new CharacterActor(this);
             mesh = characterActor.mesh;
-            this.sprites[objData.id] = mesh;
+            this.meshes[objData.id] = mesh;
             mesh.id = objData.id;
             mesh.data = objData;
-            characterActor.setName(objData.getName());
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship
@@ -315,10 +325,8 @@ class MMORPGRenderer extends Renderer {
             }
 
         }
-
-        mesh.position.x = objData.x;
-        //mesh.position.y = objData.y;
-        mesh.position.z = objData.y;
+        mesh.position = new BABYLON.Vector3(objData.x,objData.y, objData.z);
+        console.log('object added on', mesh.position);
 
         Object.assign(mesh, options);
 
@@ -330,15 +338,15 @@ class MMORPGRenderer extends Renderer {
             this.playerCharacter = null;
         }
 
-        let sprite = this.sprites[obj.id];
+        let sprite = this.meshes[obj.id];
         if (sprite.actor) {
             // removal "takes time"
             sprite.actor.destroy().then(()=>{
-                delete this.sprites[obj.id];
+                delete this.meshes[obj.id];
             });
         } else{
-            this.sprites[obj.id].destroy();
-            delete this.sprites[obj.id];
+            this.meshes[obj.id].destroy();
+            delete this.meshes[obj.id];
         }
     }
 
