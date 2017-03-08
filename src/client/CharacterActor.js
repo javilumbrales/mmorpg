@@ -18,11 +18,25 @@ class CharacterActor{
         this.mesh.ellipsoid = new BABYLON.Vector3(0.5, 1.0, 0.5);
         this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 1.0, 0);
 
+        this.gender = Math.round(Math.random());
+
+        var characterLoaded = function(t) {
+            var that = this;
+            t.loadedMeshes.forEach(function(m) {
+                console.log('loadedMesh');
+                m.name ='player';
+                m.scaling = that.gender ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
+                m.isVisible = true;
+                m.position.y = -1;
+                m.parent = that.mesh;
+            });
+        }.bind(this);
+        this.renderer.loader.loadMesh('*', this.gender ? 'lady.babylon' : 'viking.babylon', characterLoaded);
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
-        player.position.y=0;
-        player.isVisible = true;
-        player.parent = this.mesh;
+        //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
+        //player.position.y=0;
+        //player.isVisible = true;
+        //player.parent = this.mesh;
 
         this.scene = renderer.scene;
         this.destinations = [];
@@ -63,7 +77,7 @@ class CharacterActor{
 
             if (distance > this.Epsilon) {
                 moveVector = moveVector.normalize();
-                moveVector = moveVector.scale(0.1);
+                //moveVector = moveVector.scale(0.1);
                 this.mesh.moveWithCollisions(moveVector);
             } else {
                 this.destination = null;
@@ -97,7 +111,7 @@ class CharacterActor{
         dynamicTexture.update(false);
 
         var result = BABYLON.Mesh.CreatePlane("nameplate", 10, this.scene, false);
-        result.position = new BABYLON.Vector3(0, 2.75, 0);
+        result.position = new BABYLON.Vector3(0, 12.75, 0);
         result.rotation.x = Math.PI;
         result.scaling.y = 0.125;
         result.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
@@ -134,7 +148,7 @@ class CharacterActor{
         }
         console.log('animateShield');
         this.renderer.updateStatus({"status": 'standard', "message":'Using Shield'});
-        var cyl = BABYLON.Mesh.CreateSphere("shield", 4, 2, this.scene);
+        var cyl = BABYLON.Mesh.CreateSphere("shield", 200, 2, this.scene);
         var mat = new BABYLON.StandardMaterial("shield", this.scene);
         var tex = new BABYLON.Texture("assets/images/alphaCloud.png", this.scene);
         mat.opacityTexture = tex;
@@ -152,7 +166,7 @@ class CharacterActor{
         function animate() {
             i++;
             this.shieldInc--;
-            cyl.scaling.copyFromFloats(1.5 + 0.05 * Math.sin((i + Math.PI/2)/10), 2+ 0.05 * Math.sin((i + Math.PI)/10), 1.5+ 0.05 * Math.sin(i/10));
+            cyl.scaling.copyFromFloats(1.5 + 0.05 * Math.sin((i + Math.PI/2)/10), 5+ 0.05 * Math.sin((i + Math.PI)/10), 1.5+ 0.05 * Math.sin(i/10));
             tex.uOffset += 0.01;
             tex.vOffset += 0.01;
             if (this.shieldInc <= 0) {
@@ -201,7 +215,7 @@ class CharacterActor{
 
         // Our built-in 'ground' shape. Params: name, width, depth, subdivs, this.scene
         var ground = [];
-        for (var i = 0; i < 3; i++) {
+        for (var i = 0; i < 4; i++) {
             var x = BABYLON.Mesh.CreateGround("ground1", 3, 3, 2, this.scene);
             x.material = selectMaterial;
             x.parent = this.mesh;
@@ -217,7 +231,7 @@ class CharacterActor{
             var i = 0;
             for (var g of ground) {
                 i++;
-                g.position.y = initialvalue + Math.sin((frame + i *22)/15);
+                g.position.y = initialvalue + Math.sin((frame + i *252)/15) * 1.8;
                 g.visibility = 0.4 + 0.2 * (1 + Math.sin(Math.PI + (frame + i *11)/5));
             }
             //ground.scaling.x = ground.scaling.z = 0.9 + 0.2 * Math.sin(frame/5);

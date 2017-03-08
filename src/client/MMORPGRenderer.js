@@ -8,6 +8,7 @@ const Character = require('../common/Character');
 const CharacterActor = require('./CharacterActor');
 //const TreeGenerator = require('./TreeGenerator');
 const randomColor = require('./randomColor');
+const RenderLoader = require('./RenderLoader');
 
 /**
  * Renderer for the MMORPG (Babylon.js)
@@ -92,6 +93,7 @@ class MMORPGRenderer extends Renderer {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.collisionsEnabled = true;
 
+        this.loader = new RenderLoader(this.scene);
         //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
 
         // Create the camera
