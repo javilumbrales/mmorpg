@@ -31,14 +31,10 @@ class MMORPGRenderer extends Renderer {
         //if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') {
             //this.onDOMLoaded();
         //} else {
-            document.addEventListener('DOMContentLoaded', ()=>{
-                this.onDOMLoaded();
-            });
         //}
 
         return new Promise((resolve, reject)=>{
-            setTimeout(function(){
-                this.gameEngine.emit('renderer.ready');
+            document.addEventListener('DOMContentLoaded', ()=>{
 
                 if (Utils.isTouchDevice()){
                   document.body.classList.add('touch');
@@ -48,16 +44,21 @@ class MMORPGRenderer extends Renderer {
                   document.body.classList.add('pc');
                 }
 
-                resolve();
-            }.bind(this), 500);
+                this.onDOMLoaded(
+                        function() {
+                            this.gameEngine.emit('renderer.ready');
+                            resolve();
+                        }.bind(this)
+                );
+            });
         });
     }
 
-    onDOMLoaded(){
+    onDOMLoaded(readyCallback){
         if (BABYLON.Engine.isSupported()) {
-            this.initScene();
+            this.initScene(readyCallback);
+            this.setupListeners();
         }
-        this.setupListeners();
     }
 
     setupListeners() {
@@ -82,7 +83,7 @@ class MMORPGRenderer extends Renderer {
 
     }
 
-    initScene() {
+    initScene(readyCallback) {
         // Get canvas
         this.canvas = document.querySelector('#renderCanvas');
         // Create babylon engine
@@ -93,7 +94,7 @@ class MMORPGRenderer extends Renderer {
         this.scene = new BABYLON.Scene(this.engine);
         this.scene.collisionsEnabled = true;
 
-        this.loader = new RenderLoader(this.scene);
+        this.loader = new RenderLoader(this.scene, readyCallback);
         this.loader.preloadAssets();
 
         // Create the camera

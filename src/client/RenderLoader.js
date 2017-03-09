@@ -1,11 +1,12 @@
 const BABYLON = require("babylonjs");
 
-class RenderLoader{
+class RenderLoader {
 
-    constructor(scene) {
+    constructor(scene, onFinish) {
         this.scene = scene;
         this.loader = new BABYLON.AssetsManager(this.scene);
         this.loader.useDefaultLoadingScreen = false;
+        this.loader.onFinish = onFinish;
         this.assets = {};
     }
 
