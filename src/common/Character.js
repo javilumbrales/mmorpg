@@ -2,49 +2,48 @@
 
 const Serializer = require('incheon').serialize.Serializer;
 const DynamicObject = require('incheon').serialize.DynamicObject;
-const Point = require('incheon').Point;
+const ThreeVector = require('incheon').serialize.ThreeVector;
 const Utils = require('./Utils');
 
 class Character extends DynamicObject {
 
     static get netScheme() {
         return Object.assign({
-            z: { type: Serializer.TYPES.INT16 },
             health: { type: Serializer.TYPES.INT32 },
             shield: { type: Serializer.TYPES.INT32 },
+            kind: { type: Serializer.TYPES.INT32 },
             animations: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
+     get z() { return this.position.z; }
 
     toString() {
-        return `Player::Character::${super.toString()}`;
+        return `Player::Character::${super.toString()} Kind::${this.kind}`;
     }
 
     get bendingAngleLocalMultiple() { return 0.0; }
 
-    copyFrom(sourceObj) {
-        super.copyFrom(sourceObj);
-        this.z = sourceObj.z;
-        this.health = sourceObj.health;
-        this.shield = sourceObj.shield;
-        this.name = sourceObj.name;
-        this.animations = sourceObj.animations;
-    }
-
     syncTo(other) {
         super.syncTo(other);
-        this.z = other.z;
         this.health = other.health;
         this.shield = other.shield;
-        this.name = other.name;
+        this.kind = other.kind;
         this.animations = other.animations;
     }
 
-    constructor(id, gameEngine, x, y, z) {
-        super(id, x, y);
+    constructor(id, gameEngine, position, velocity, kind) {
+        super(id, position, velocity);
         this.class = Character;
-        this.z = z;
+        this.position = new ThreeVector(0, 0, 0);
+        this.velocity = new ThreeVector(0, 0, 0);
+        if (position) {
+            this.position.copy(position);
+        }
+        if (velocity) {
+            this.velocity.copy(position);
+        }
         this.gameEngine = gameEngine;
+        this.kind = kind;
 
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;

@@ -2,8 +2,9 @@ const BABYLON = require("babylonjs");
 
 class CharacterActor{
 
-    constructor(renderer){
-        this.Epsilon = 0.1;
+    constructor(renderer, kind) {
+        this.Epsilon = 0.15;
+        this.kind = kind;
 
         this.renderer = renderer;
         this.gameEngine = renderer.gameEngine;
@@ -18,38 +19,32 @@ class CharacterActor{
         this.mesh.ellipsoid = new BABYLON.Vector3(0.5, 1.0, 0.5);
         this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 1.0, 0);
 
-        this.gender = Math.round(Math.random());
 
-        var characterLoaded = function(t) {
-            var that = this;
-            t.loadedMeshes.forEach(function(m) {
-                console.log('loadedMesh');
-                m.name ='player';
-                m.scaling = that.gender ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
-                m.isVisible = true;
-                m.position.y = -1;
-                m.parent = that.mesh;
-            });
-        }.bind(this);
-        this.renderer.loader.loadMesh('*', this.gender ? 'lady.babylon' : 'viking.babylon', characterLoaded);
-        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
-        //player.position.y=0;
+
+        let playerModel = this.renderer.loader.assets[this.kind ? 'shirt' : 'viking'][0];
+        //let player = playerModel.createInstance('player');
+
+        //player.name ='player';
+        //player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
         //player.isVisible = true;
+        //player.position.y = -1;
         //player.parent = this.mesh;
 
+        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
+        let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
+        player.position.y=0;
+        player.isVisible = true;
+        player.parent = this.mesh;
+
         this.scene = renderer.scene;
-        this.destinations = [];
         this.isMoving = false;
         this.mesh.isPickable = true;
-        this._destination = false;
-        this.speed = 4;
         this.health = document.querySelector('#health');
 
         // Add move function to the character
         this.mesh.getScene().registerBeforeRender(function () {
             //this.moveCharacter();
-            this.moveAndFollow();
+            this.moveToDestination();
         }.bind(this));
 
         //keep a reference to the actor from the mesh
@@ -57,27 +52,23 @@ class CharacterActor{
     }
 
     renderStep(position) {
-        if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.z)) {
-           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.y);
+        if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
+           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
 
-           this.mesh.position.x = delta.x;
-           this.mesh.position.y = delta.y;
-           this.mesh.position.z = delta.z;
+           this.mesh.position = delta;
         }
     }
 
-    addDestination(value, data) {
-        // Add this destination to the set of destination
-        this.destinations.push({ position: value, data: data });
-    };
-    moveAndFollow() {
+    moveToDestination() {
         if (this.destination) {
+            console.log('moveToDestination', this.mesh.position, this.destination);
             var moveVector = this.destination.subtract(this.mesh.position);
             var distance = moveVector.length();
 
+            console.log(distance);
             if (distance > this.Epsilon) {
                 moveVector = moveVector.normalize();
-                //moveVector = moveVector.scale(0.1);
+                moveVector = moveVector.scale(0.3);
                 this.mesh.moveWithCollisions(moveVector);
             } else {
                 this.destination = null;

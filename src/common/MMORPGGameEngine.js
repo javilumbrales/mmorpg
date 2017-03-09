@@ -1,7 +1,7 @@
 'use strict';
 
 const GameEngine = require('incheon').GameEngine;
-const Point = require('incheon').Point;
+const ThreeVector = require('incheon').serialize.ThreeVector;
 const Character = require('./Character');
 const Timer = require('./Timer');
 
@@ -58,14 +58,14 @@ class MMORPGGameEngine extends GameEngine {
                 case 'move':
                     console.log("Player moving to", inputData);
                     playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
-                    playerCharacter.destination = new Point(inputData.options.destination.x, inputData.options.destination.z);
+                    playerCharacter.destination = new ThreeVector(inputData.options.destination.x, inputData.options.destination.y, inputData.options.destination.z);
                     break;
                 case 'attack':
                     id = this.animations[inputData.input];
                     if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
                         let attackTarget = this.world.objects[playerCharacter.target];
                         if (attackTarget) {
-                            let distanceToTarget = this.distance(new Point(playerCharacter.x, playerCharacter.z), new Point(attackTarget.x, attackTarget.z));
+                            let distanceToTarget = this.distance(new ThreeVector(playerCharacter.x, playerCharacter.y, playerCharacter.z), new ThreeVector(attackTarget.x, attackTarget.y, attackTarget.z));
                             console.log('Player position:', playerCharacter.x, playerCharacter.y, playerCharacter.z);
                             console.log('Target position:', attackTarget.x, attackTarget.y, attackTarget.z);
                             if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
@@ -139,8 +139,11 @@ class MMORPGGameEngine extends GameEngine {
     moveToTarget(obj) {
         obj.isMoving = true;
         // Compute direction
-        let direction = (new Point()).copyFrom(obj.destination).subtract(obj.x, obj.z);
+        console.log('moveToTarget from:', obj.position, 'to', obj.destination);
+        let direction = (new ThreeVector(0,0,0)).copy(obj.destination).subtract(obj.position);
+        console.log('direction', direction);
         direction.normalize();
+        console.log('direction normalized', direction);
         this.moveInDirecton(obj, direction);
     }
 
@@ -148,19 +151,19 @@ class MMORPGGameEngine extends GameEngine {
     distance(targeta, targetb) {
         let dx = targeta.x - targetb.x;
         let dy = targeta.y - targetb.y;
-        return Math.sqrt(dx * dx + dy * dy);
+        let dz = targeta.z - targetb.z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     moveInDirecton(obj, direction) {
         // If a destination has been set and the character has not been stopped
         if (obj.isMoving && obj.destination) {
             // Compute distance to destination
-            var distance = this.distance(new Point(obj.x, obj.z), obj.destination);
+            var distance = this.distance(new ThreeVector(obj.x, obj.y, obj.z), obj.destination);
             // Change destination if th distance is increasing (should not)
             if (distance < this.Epsilon || distance > obj._lastDistance) {
                 // Set the minion position to the curent destination
-                obj.x = obj.destination.x;
-                obj.z = obj.destination.y;
+                obj.position = obj.destination;
 
                 // Destination has been reached
                 obj.isMoving = false;
@@ -178,7 +181,7 @@ class MMORPGGameEngine extends GameEngine {
             else {
                 obj._lastDistance = distance;
                 // Add direction to the position
-                let delta = direction.multiply(obj.maxSpeed, obj.maxSpeed);
+                let delta = direction.multiplyScalar(obj.maxSpeed);
                 //obj.mesh.position.addInPlace(delta);
                 //console.log('gameengine:', direction, distance, delta);
 
@@ -186,8 +189,9 @@ class MMORPGGameEngine extends GameEngine {
 
                 //console.log(velocityAndGravity);
                 //obj.mesh.moveWithCollisions(velocityAndGravity);
-                obj.x += delta.x;
-                obj.z += delta.y;
+                obj.position.x += delta.x;
+                obj.position.y += delta.y;
+                obj.position.z += delta.z;
                 console.log('moved to', obj.x, obj.y, obj.z);
             }
         }
@@ -214,13 +218,14 @@ class MMORPGGameEngine extends GameEngine {
      * Makes a new character, places it randomly and adds it to the game world
      * @return {Character} the added Character object
      */
-    makeCharacter(playerId, name) {
+    makeCharacter(playerId, name, kind) {
+        console.log('makeCharacter', kind);
         let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
         let newCharacterY = 0;
         let newCharacterZ = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
 
         // todo playerId should be called ownerId
-        let character = new Character(++this.world.idCount, this, newCharacterX, newCharacterY, newCharacterZ);
+        let character = new Character(++this.world.idCount, this, new ThreeVector(newCharacterX, newCharacterY, newCharacterZ), null, kind);
         character.name = name;
         character.playerId = playerId;
         this.addObjectToWorld(character);

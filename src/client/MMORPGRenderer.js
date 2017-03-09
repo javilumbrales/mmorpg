@@ -94,7 +94,7 @@ class MMORPGRenderer extends Renderer {
         this.scene.collisionsEnabled = true;
 
         this.loader = new RenderLoader(this.scene);
-        //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
+        this.loader.preloadAssets();
 
         // Create the camera
         //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);
@@ -138,26 +138,6 @@ class MMORPGRenderer extends Renderer {
         //ground.material = groundMaterial;
         groundMaterial.checkCollisions = true;
         //ground.checkCollisions = true;
-
-        // Castle
-        //var loader = new BABYLON.AssetsManager(this.scene);
-        //var castleLoaded = function(t) {
-            //t.loadedMeshes.forEach(function(m) {
-                ////m.scaling = new BABYLON.Vector3(15, 6, 1);
-                //m.scaling.scaleInPlace(0.05);
-                //m.rotate(BABYLON.Axis.X, -Math.PI / 2, BABYLON.Space.LOCAL);
-                //m.position.x = 10;
-                //m.position.y = 0;
-                //m.position.z = 50;
-                //m.checkCollisions = true;
-                //m.material = groundMaterial;
-            //});
-        //};
-        //var castle = loader.addMeshTask("*", "", "assets/", "castle.babylon");
-        //castle.onSuccess = castleLoaded;
-
-
-        //loader.load();
 
         // Fog
         //this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
@@ -278,7 +258,7 @@ class MMORPGRenderer extends Renderer {
         }
     }
 
-    setNames(data, retrying) {
+    setNames(data, retries) {
         console.log('Setting names for', data);
         for (let id in data) {
             if (data.hasOwnProperty(id)) {
@@ -291,9 +271,9 @@ class MMORPGRenderer extends Renderer {
             }
         }
 
-        if (Object.keys(data).length && !retrying) {
+        if (Object.keys(data).length && retries >= 0) {
             setTimeout(function(){
-                this.setNames(data);
+                this.setNames(data, --retries);
             }.bind(this), 500);
         }
     }
@@ -302,7 +282,7 @@ class MMORPGRenderer extends Renderer {
         let mesh;
 
         if (objData.class == Character) {
-            let characterActor = new CharacterActor(this);
+            let characterActor = new CharacterActor(this, objData.kind);
             mesh = characterActor.mesh;
             this.meshes[objData.id] = mesh;
             mesh.id = objData.id;
@@ -311,8 +291,8 @@ class MMORPGRenderer extends Renderer {
             if (this.clientEngine.isOwnedByPlayer(objData)) {
                 this.playerCharacter = mesh; // save reference to the player ship
                 // Center camera
-                this.camera.target.x = parseFloat(objData.x);
-                this.camera.target.z = parseFloat(objData.y);
+                this.camera.target.x = parseFloat(objData.position.x);
+                this.camera.target.z = parseFloat(objData.position.z);
 
                 document.body.classList.remove('lostGame');
                 document.body.classList.add('gameActive');

@@ -2,6 +2,7 @@ require("babel-polyfill");
 const qsOptions = require('query-string').parse(location.search);
 const MMORPGClientEngine = require('../client/MMORPGClientEngine');
 const MMORPGGameEngine = require('../common/MMORPGGameEngine');
+const MMORPGRenderer = require('../client/MMORPGRenderer');
 const SimplePhysicsEngine = require('incheon').physics.SimplePhysicsEngine;
 require('../../assets/sass/main.scss');
 
@@ -23,6 +24,6 @@ let options = Object.assign(defaults, qsOptions);
 const physicsEngine = new SimplePhysicsEngine({ collisionOptions: { COLLISION_DISTANCE: 25 } } );
 const gameOptions = Object.assign({ physicsEngine }, options);
 const gameEngine = new MMORPGGameEngine(gameOptions);
-const clientEngine = new MMORPGClientEngine(gameEngine, options);
+const clientEngine = new MMORPGClientEngine(gameEngine, options, MMORPGRenderer);
 
 clientEngine.start();

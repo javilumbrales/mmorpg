@@ -65,9 +65,9 @@ class MouseControls{
             if (pickResult.pickedMesh.name == 'player') {
                 this.renderer.setTarget(pickResult.pickedMesh.parent);
             }
-            if (pickResult.pickedMesh.name != 'extraGround') {
-                pickResult.pickedPoint.y = -1;
-            }
+
+            // TODO: Fix this to be able to take stairs and so on
+            pickResult.pickedPoint.y = 0;
 
             this.destinations.push(pickResult.pickedPoint);
             this.renderer.playerCharacter.actor.destination = pickResult.pickedPoint;

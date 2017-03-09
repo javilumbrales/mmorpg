@@ -1,6 +1,5 @@
 const Howler = require('howler'); // eslint-disable-line no-unused-vars
 const ClientEngine = require('incheon').ClientEngine;
-const MMORPGRenderer = require('../client/MMORPGRenderer');
 const MobileControls = require('../client/MobileControls');
 const KeyboardControls = require('../client/KeyboardControls');
 const MouseControls = require('../client/MouseControls');
@@ -8,11 +7,8 @@ const Character = require('../common/Character');
 const Utils = require('./../common/Utils');
 
 class MMORPGClientEngine extends ClientEngine {
-    constructor(gameEngine, options) {
-        super(gameEngine, options);
-
-        // initialize renderer
-        this.renderer = new MMORPGRenderer(gameEngine, this);
+    constructor(gameEngine, options, Renderer) {
+        super(gameEngine, options, Renderer);
 
         this.serializer.registerClass(require('../common/Character'));
 
@@ -90,7 +86,7 @@ class MMORPGClientEngine extends ClientEngine {
                 this.renderer.updateStatus(e);
             });
             this.socket.on('connectedPlayers', (e) => {
-                this.renderer.setNames(e);
+                this.renderer.setNames(e, 4);
             });
 
             this.socket.on('disconnect', (e) => {
