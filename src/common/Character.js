@@ -2,53 +2,48 @@
 
 const Serializer = require('incheon').serialize.Serializer;
 const DynamicObject = require('incheon').serialize.DynamicObject;
-const ThreeVector = require('incheon').serialize.ThreeVector;
+const TwoVector = require('incheon').serialize.TwoVector;
 const Utils = require('./Utils');
 
 class Character extends DynamicObject {
 
     static get netScheme() {
         return Object.assign({
+            height: { type: Serializer.TYPES.INT32 },
             health: { type: Serializer.TYPES.INT32 },
             shield: { type: Serializer.TYPES.INT32 },
             kind: { type: Serializer.TYPES.INT32 },
             animations: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
-     get z() { return this.position.z; }
 
     toString() {
-        return `Player::Character::${super.toString()} Kind::${this.kind}`;
+        return `Player::Character::${super.toString()} Height=${this.height} Kind=${this.kind}`;
     }
 
     get bendingAngleLocalMultiple() { return 0.0; }
 
     syncTo(other) {
         super.syncTo(other);
+        this.height = other.height;
         this.health = other.health;
         this.shield = other.shield;
         this.kind = other.kind;
         this.animations = other.animations;
     }
 
-    constructor(id, gameEngine, position, velocity, kind) {
+    constructor(id, gameEngine, position, velocity, height, kind) {
         super(id, position, velocity);
         this.class = Character;
-        this.position = new ThreeVector(0, 0, 0);
-        this.velocity = new ThreeVector(0, 0, 0);
-        if (position) {
-            this.position.copy(position);
-        }
-        if (velocity) {
-            this.velocity.copy(position);
-        }
+        this.height = height
+
         this.gameEngine = gameEngine;
         this.kind = kind;
 
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;
         this.animations = [];
-        this.maxDistanceToTarget = 3;
+        this.maxDistanceToTarget = 5;
 
         this.skills = {
             '1':{'duration': 1, 'action': {'param': 'attack', 'act':10, 'deact':0}},

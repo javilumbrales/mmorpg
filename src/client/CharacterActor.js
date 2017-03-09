@@ -22,19 +22,19 @@ class CharacterActor{
 
 
         let playerModel = this.renderer.loader.assets[this.kind ? 'shirt' : 'viking'][0];
-        //let player = playerModel.createInstance('player');
+        let player = playerModel.createInstance('player');
 
-        //player.name ='player';
-        //player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
-        //player.isVisible = true;
-        //player.position.y = -1;
-        //player.parent = this.mesh;
+        player.name ='player';
+        player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
+        player.isVisible = true;
+        player.position.y = -1;
+        player.parent = this.mesh;
 
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
-        player.position.y=0;
-        player.isVisible = true;
-        player.parent = this.mesh;
+        //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
+        //player.position.y=0;
+        //player.isVisible = true;
+        //player.parent = this.mesh;
 
         this.scene = renderer.scene;
         this.isMoving = false;
@@ -54,6 +54,8 @@ class CharacterActor{
     renderStep(position) {
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
            let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
+
+           console.log('renderStep object at', delta);
 
            this.mesh.position = delta;
         }

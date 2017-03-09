@@ -214,8 +214,8 @@ class MMORPGRenderer extends Renderer {
             if (objData) {
 
                 sprite.x = objData.x;
-                sprite.y = objData.y;
-                sprite.z = objData.z;
+                sprite.y = objData.height;
+                sprite.z = objData.y;
             }
 
             if (sprite) {
@@ -292,7 +292,7 @@ class MMORPGRenderer extends Renderer {
                 this.playerCharacter = mesh; // save reference to the player ship
                 // Center camera
                 this.camera.target.x = parseFloat(objData.position.x);
-                this.camera.target.z = parseFloat(objData.position.z);
+                this.camera.target.z = parseFloat(objData.position.y);
 
                 document.body.classList.remove('lostGame');
                 document.body.classList.add('gameActive');
@@ -307,7 +307,7 @@ class MMORPGRenderer extends Renderer {
             }
 
         }
-        mesh.position = new BABYLON.Vector3(objData.x,objData.y, objData.z);
+        mesh.position = new BABYLON.Vector3(objData.x,objData.height, objData.y);
         console.log('object added on', mesh.position);
 
         Object.assign(mesh, options);
