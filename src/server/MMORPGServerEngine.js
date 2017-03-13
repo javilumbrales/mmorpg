@@ -1,6 +1,7 @@
 'use strict';
 
 const ServerEngine = require('incheon').ServerEngine;
+const Database = require('./Database');
 
 class MMORPGServerEngine extends ServerEngine {
     constructor(io, gameEngine, inputOptions) {
@@ -11,6 +12,22 @@ class MMORPGServerEngine extends ServerEngine {
 
     start() {
         super.start();
+
+        this.database = new Database(process);
+
+        this.database.createUser(
+                {"username":"javi", "pass": "javi", "name": "Javier Ch"},
+                function(created) {
+                    console.log('created', created.dataValues);
+                }
+        );
+        this.database.loadUser(
+                {"username":"javi", "pass": "javi"},
+                function(user) {
+                    console.log('loadUser', user.dataValues);
+                    return user.dataValues;
+                }
+        );
 
         this.createNpc('Gandalf')
 
