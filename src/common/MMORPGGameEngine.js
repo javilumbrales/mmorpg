@@ -3,6 +3,7 @@
 const GameEngine = require('incheon').GameEngine;
 const TwoVector = require('incheon').serialize.TwoVector;
 const Character = require('./Character');
+const NPC = require('./NPC');
 const Timer = require('./Timer');
 
 
@@ -29,7 +30,7 @@ class MMORPGGameEngine extends GameEngine {
                     }
                 }
                 if (o.destination) {
-                    console.log(`Moving ${o.id} to: ${o.destination}`);
+                    console.log(`Moving player ${o.id}  from ${o.position} to: ${o.destination}`);
                     this.moveToTarget(o);
                 }
             }
@@ -44,7 +45,8 @@ class MMORPGGameEngine extends GameEngine {
         this.animations = {
             'attack': 1,
             'heal': 2,
-            'shield': 3
+            'shield': 3,
+            'teleport': 4
         };
 
         this.on('server__inputReceived', (data)=>{
@@ -92,11 +94,6 @@ class MMORPGGameEngine extends GameEngine {
                         playerCharacter.applySkill(id, true);
                     }
                     playerCharacter.running[id] = playerCharacter.skills[id]['duration'];
-                        //setTimeout(function() {
-                            //playerCharacter.animation = 0;
-                            //playerCharacter.shield -= playerCharacter.skills[id]['action']['shield'];
-                        //}.bind(this), playerCharacter.skills[3]['duration']);
-                    //}});
                     break;
                 case 'heal':
                     id = this.animations[inputData.input];
@@ -112,6 +109,24 @@ class MMORPGGameEngine extends GameEngine {
                     console.log('new target', inputData.options);
                     playerCharacter.target = inputData.options.id;
                     break;
+
+                case 'teleport':
+                    console.log('teleporting player', inputData);
+                    let telep = this.getPlayerCharacter(inputData.options.playerId);
+                    if (telep) {
+                        id = this.animations[inputData.input];
+                        telep.position.x = inputData.options.destination.x;
+                        telep.position.y = inputData.options.destination.z;
+                        telep.height = inputData.options.destination.z;
+                        telep.animations.push(id);
+                        telep.running[id] = telep.skills[id]['duration'];
+                        console.log('found player animation started', telep.position, telep);
+                    } else {
+                        console.log(inputData.options['playerId'], ' not found');
+                    }
+
+                    break;
+
                 default:
                     console.log('uknown action', inputData.input);
 
@@ -139,11 +154,11 @@ class MMORPGGameEngine extends GameEngine {
     moveToTarget(obj) {
         obj.isMoving = true;
         // Compute direction
-        console.log('moveToTarget from:', obj.position, 'to', obj.destination);
+        //console.log('moveToTarget from:', obj.position, 'to', obj.destination);
         let direction = (new TwoVector(0,0)).copy(obj.destination).subtract(obj.position);
-        console.log('direction', direction);
+        //console.log('direction', direction);
         direction.normalize();
-        console.log('direction normalized', direction);
+        //console.log('direction normalized', direction);
         this.moveInDirecton(obj, direction);
     }
 
@@ -213,18 +228,38 @@ class MMORPGGameEngine extends GameEngine {
         super.processInput(inputData, playerId);
     };
 
+    getRandCoords() {
+
+        return {
+            "x": Math.floor(Math.random()*(this.worldSettings.width-200) / 2),
+            "y": 0,
+            "z": Math.floor(Math.random()*(this.worldSettings.height-200) / 2)
+        };
+
+    }
+
+    makeNpc(name) {
+
+        console.log('makeNPC', name);
+        let cords = this.getRandCoords()
+
+        // todo playerId should be called ownerId
+        let npc = new NPC(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y']);
+        npc.name = name;
+        this.addObjectToWorld(npc);
+        console.log(`NPC added: ${npc.toString()}`);
+    }
+
     /**
      * Makes a new character, places it randomly and adds it to the game world
      * @return {Character} the added Character object
      */
     makeCharacter(playerId, name, kind) {
         console.log('makeCharacter', kind);
-        let newCharacterX = Math.floor(Math.random()*(this.worldSettings.width-200) / 2);
-        let newCharacterY = 0;
-        let newCharacterZ = Math.floor(Math.random()*(this.worldSettings.height-200) / 2);
+        let cords = this.getRandCoords()
 
         // todo playerId should be called ownerId
-        let character = new Character(++this.world.idCount, this, new TwoVector(newCharacterX, newCharacterZ), null, newCharacterY, kind);
+        let character = new Character(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y'], kind);
         character.name = name;
         character.playerId = playerId;
         this.addObjectToWorld(character);

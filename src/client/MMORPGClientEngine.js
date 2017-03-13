@@ -4,6 +4,7 @@ const MobileControls = require('../client/MobileControls');
 const KeyboardControls = require('../client/KeyboardControls');
 const MouseControls = require('../client/MouseControls');
 const Character = require('../common/Character');
+const NPC = require('../common/NPC');
 const Utils = require('./../common/Utils');
 
 class MMORPGClientEngine extends ClientEngine {
@@ -11,6 +12,7 @@ class MMORPGClientEngine extends ClientEngine {
         super(gameEngine, options, Renderer);
 
         this.serializer.registerClass(require('../common/Character'));
+        this.serializer.registerClass(require('../common/NPC'));
 
         this.gameEngine.on('client__preStep', this.preStep.bind(this));
     }
@@ -70,6 +72,9 @@ class MMORPGClientEngine extends ClientEngine {
             });
             this.renderer.on('target', (e) => {
                 this.sendInput('target', e);
+            });
+            this.renderer.on('teleport', (e) => {
+                this.sendInput('teleport', e);
             });
 
         });

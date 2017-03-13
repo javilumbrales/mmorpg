@@ -6,6 +6,8 @@ const Utils= require('./../common/Utils');
 
 const Character = require('../common/Character');
 const CharacterActor = require('./CharacterActor');
+const NPC = require('../common/NPC');
+const NPCActor = require('./NPCActor');
 //const TreeGenerator = require('./TreeGenerator');
 const randomColor = require('./randomColor');
 const RenderLoader = require('./RenderLoader');
@@ -231,6 +233,9 @@ class MMORPGRenderer extends Renderer {
                                 this.playerCharacter.actor.animateHeal();
                             } else if (a == 3) {
                                 this.playerCharacter.actor.animateShield();
+                            } else if (a == 4) {
+                                console.log(objData.position, objData);
+                                this.playerCharacter.actor.animateTeleport({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                             }
                         }
                     }
@@ -241,6 +246,16 @@ class MMORPGRenderer extends Renderer {
         }
 
     }
+
+    showDialog(obj) {
+        var dist = this.playerCharacter.position.subtract(obj.position);
+        var distance = Math.abs(dist.length());
+        console.log(distance);
+        if (distance < 10) {
+            obj.actor.showDialog(this.playerCharacter.data.playerId);
+        }
+    }
+
     setTarget(obj) {
         document.querySelector('.target-hp-bar').style.opacity = 0.7;
         var health = document.querySelector('#target-health');
@@ -307,6 +322,13 @@ class MMORPGRenderer extends Renderer {
                 this.addOffscreenIndicator(objData);
             }
 
+        } else if (objData.class == NPC) {
+
+            let npcActor = new NPCActor(this);
+            mesh = npcActor.mesh;
+            this.meshes[objData.id] = mesh;
+            mesh.id = objData.id;
+            mesh.data = objData;
         }
         mesh.position = new BABYLON.Vector3(objData.x,objData.height, objData.y);
         console.log('object added on', mesh.position);

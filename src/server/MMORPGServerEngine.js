@@ -12,6 +12,8 @@ class MMORPGServerEngine extends ServerEngine {
     start() {
         super.start();
 
+        this.createNpc('Gandalf')
+
         this.gameEngine.on('killed', (e) => {
 
             console.log(`player killed: ${e.character.toString()}`);
@@ -22,12 +24,16 @@ class MMORPGServerEngine extends ServerEngine {
         this.players = {};
     }
 
+    createNpc(name) {
+        let npc = this.gameEngine.makeNpc(name);
+    }
+
     onPlayerConnected(socket) {
         super.onPlayerConnected(socket);
 
         let makePlayerCharacter = () => {
-            let names = ["Valanar", "p0w3rf1y", "Rins", "Malaga", "Pepito"];
-            let kind = Math.round(Math.random());
+            let names = ["Valanar", "Vala", "Rins", "Ripo", "Ripollet", "p0w3rf1y"];
+            let kind = 0; //Math.round(Math.random());
             let character = this.gameEngine.makeCharacter(socket.playerId, names[Math.floor(Math.random() * names.length)] + Math.round(Math.random() * 4), kind);
             this.players[socket.playerId] = character.name;
             this.updateStatus({"status": 'connected', "message": `Player connected: ${character.name}`});

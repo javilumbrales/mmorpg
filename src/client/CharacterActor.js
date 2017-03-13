@@ -3,7 +3,7 @@ const BABYLON = require("babylonjs");
 class CharacterActor{
 
     constructor(renderer, kind) {
-        this.Epsilon = 0.15;
+        this.Epsilon = 1;
         this.kind = kind;
 
         this.renderer = renderer;
@@ -21,14 +21,15 @@ class CharacterActor{
 
 
 
-        let playerModel = this.renderer.loader.assets[this.kind ? 'shirt' : 'viking'][0];
-        let player = playerModel.createInstance('player');
+        this.playerModel = this.renderer.loader.assets['viking'][0];
+        let player = this.playerModel.createInstance('player');
 
         player.name ='player';
         player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
         player.isVisible = true;
         player.position.y = -1;
         player.parent = this.mesh;
+        this.playAnimation(this.playerModel, 'viking', 'idle', true, 1);
 
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
         //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
@@ -63,17 +64,23 @@ class CharacterActor{
 
     moveToDestination() {
         if (this.destination) {
-            console.log('moveToDestination', this.mesh.position, this.destination);
+            if (!this.isMoving) {
+                this.playAnimation(this.playerModel, 'viking', 'walk', true, 1);
+                this.isMoving = true;
+            }
+            //console.log('moveToDestination', this.mesh.position, this.destination);
             var moveVector = this.destination.subtract(this.mesh.position);
             var distance = moveVector.length();
 
-            console.log(distance);
+            //console.log(distance);
             if (distance > this.Epsilon) {
                 moveVector = moveVector.normalize();
                 moveVector = moveVector.scale(0.3);
                 this.mesh.moveWithCollisions(moveVector);
             } else {
                 this.destination = null;
+                this.playAnimation(this.playerModel, 'viking', 'idle', true, 1);
+                this.isMoving = false;
             }
         }
     }
@@ -243,6 +250,46 @@ class CharacterActor{
 
         this.healAnimation = setInterval(update.bind(this), 20);
 
+    }
+
+    animateTeleport(destination) {
+        console.log('animateTeleport');
+
+        if(this.teleporting) {
+            this.teleportInc +=5;
+            return;
+        }
+        this.teleporting = true;
+        this.teleportInc = 100;
+
+        BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.playerModel, 'visibility', 30, 70, 1, 0.1, 0);
+
+        this.healAnimation = setInterval(function() {
+            if(this.teleportInc-- <= 0) {
+
+                console.log('stop animateTeleport', destination);
+                clearInterval(this.healAnimation);
+                this.mesh.position.x = 1;
+                //this.mesh.position.y = 0;
+                this.mesh.position.z = 1;
+                //this.mesh.position.x = destination.x;
+                //this.mesh.position.y = destination.y;
+                //this.mesh.position.z = destination.z;
+                BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.playerModel, 'visibility', 30, 70, 0.1, 1, 0);
+                this.teleporting = null;
+            }
+
+        }.bind(this), 20);
+    }
+
+    /**
+     * Play the given animation if skeleton found
+     */
+    playAnimation(mesh, asset, name, loop, speed) {
+        //mesh.beginAnimation(name, loop, speed);
+        let animation = this.renderer.loader.animations[asset][name];
+        mesh.getScene().beginAnimation(mesh, animation.from, animation.to, loop, speed);
+        console.log('playAnimation', animation, mesh, name, loop, speed);
     }
 
 }

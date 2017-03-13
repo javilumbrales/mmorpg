@@ -43,7 +43,7 @@ class MouseControls{
         }
 
         var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY, function (mesh) {
-            return mesh.name == 'player';
+            return mesh.name == 'player' || mesh.name =='npc';
         });
 
             if (pickResult.hit) {
@@ -62,7 +62,10 @@ class MouseControls{
             return mesh.isPickable && mesh.isEnabled()
         });
         if (this.renderer.playerCharacter && pickResult.pickedPoint) {
-            if (pickResult.pickedMesh.name == 'player') {
+            if (pickResult.pickedMesh.name == 'player' ) {
+                this.renderer.setTarget(pickResult.pickedMesh.parent);
+            } else if (pickResult.pickedMesh.name =='npc') {
+                this.renderer.showDialog(pickResult.pickedMesh.parent);
                 this.renderer.setTarget(pickResult.pickedMesh.parent);
             }
 
