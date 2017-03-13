@@ -16,19 +16,19 @@ class MMORPGServerEngine extends ServerEngine {
         this.database = new Database(process);
 
         // Test DB
-        this.database.createUser(
-                {"username":"javi", "pass": "javi", "name": "Javier Ch"},
-                function(created) {
-                    console.log('created', created.dataValues);
-                }
-        );
-        this.database.loadUser(
-                {"username":"javi", "pass": "javi"},
-                function(user) {
-                    console.log('loadUser', user.dataValues);
-                    return user.dataValues;
-                }
-        );
+        //this.database.createUser(
+                //{"username":"javi", "pass": "javi", "name": "Javier Ch"},
+                //function(created) {
+                    //console.log('created', created.dataValues);
+                //}
+        //);
+        //this.database.loadUser(
+                //{"username":"javi", "pass": "javi"},
+                //function(user) {
+                    //console.log('loadUser', user.dataValues);
+                    //return user.dataValues;
+                //}
+        //);
 
         this.createNpc('Gandalf')
 
