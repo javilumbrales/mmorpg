@@ -37,13 +37,19 @@ class Database {
                 username: user.username,
                 pass: user.pass,
             }).then(callback)
+            .catch(function(err) {
+                console.log(err);
+            });
         }.bind(this));
     }
 
     loadUser(user, callback) {
         // search for attributes
-        return this.sequelize.sync().then(function() {
-            return this.db.User.find({ where: user }).then(callback)
+        this.sequelize.sync().then(function() {
+            this.db.User.find({ where: user }).then(callback)
+            .catch(function(err) {
+                console.log(err);
+            });
         }.bind(this));
 
     }
