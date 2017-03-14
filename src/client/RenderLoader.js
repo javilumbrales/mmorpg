@@ -38,7 +38,7 @@ class RenderLoader {
 
         setTimeout(function() {
             this.loader.load();
-        }.bind(this), 4000);
+        }.bind(this), 1000);
     }
 
     onVikingLoaded(t) {
