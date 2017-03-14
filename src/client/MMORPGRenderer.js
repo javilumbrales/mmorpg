@@ -49,6 +49,8 @@ class MMORPGRenderer extends Renderer {
                 this.onDOMLoaded(
                         function() {
                             this.gameEngine.emit('renderer.ready');
+                            document.body.classList.add('gameLoaded');
+                            this.initScene();
                             resolve();
                         }.bind(this)
                 );
@@ -58,7 +60,22 @@ class MMORPGRenderer extends Renderer {
 
     onDOMLoaded(readyCallback){
         if (BABYLON.Engine.isSupported()) {
-            this.initScene(readyCallback);
+            // Get canvas
+            this.canvas = document.querySelector('#renderCanvas');
+            // Create babylon engine
+            this.engine = new BABYLON.Engine(this.canvas, true);
+            this.engine.enableOfflineSupport = false;
+
+            this.engine.displayLoadingUI();
+            this.engine.loadingUIText = "From the creators of the epic Lineage 2 C2 - BloodRage Server...";
+
+
+            // Create scene
+            this.scene = new BABYLON.Scene(this.engine);
+            this.scene.collisionsEnabled = true;
+
+            this.loader = new RenderLoader(this.scene, readyCallback);
+            this.loader.preloadAssets(readyCallback);
             this.setupListeners();
         }
     }
@@ -85,19 +102,7 @@ class MMORPGRenderer extends Renderer {
 
     }
 
-    initScene(readyCallback) {
-        // Get canvas
-        this.canvas = document.querySelector('#renderCanvas');
-        // Create babylon engine
-        this.engine = new BABYLON.Engine(this.canvas, true);
-        this.engine.enableOfflineSupport = false;
-
-        // Create scene
-        this.scene = new BABYLON.Scene(this.engine);
-        this.scene.collisionsEnabled = true;
-
-        this.loader = new RenderLoader(this.scene, readyCallback);
-        this.loader.preloadAssets();
+    initScene() {
 
         // Create the camera
         //let camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0,4,-10), this.scene);

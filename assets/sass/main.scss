@@ -13,6 +13,7 @@ html,body{
 }
 
 #guiContainer, #offscreenIndicatorContainer{
+    opacity: 0;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -57,7 +58,6 @@ html,body{
 
 #joinGame {
 	pointer-events: all;
-	opacity: 1;
 }
 
 button{
@@ -306,6 +306,10 @@ h2{
 	}
 }
 
+body.gameLoaded {
+    #joinGame { opacity: 1}
+    #guiContainer, #offscreenIndicatorContainer{ opacity: 1}
+}
 body.gameActive{
 	.hud { opacity: 0.3;}
 	.hp-bar { opacity: 0.6;}
