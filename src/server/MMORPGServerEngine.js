@@ -8,6 +8,8 @@ class MMORPGServerEngine extends ServerEngine {
         super(io, gameEngine, inputOptions);
 
         this.serializer.registerClass(require('../common/Character'));
+        this.serializer.registerClass(require('../common/NPC'));
+        this.serializer.registerClass(require('../common/Mob'));
     }
 
     start() {
@@ -30,7 +32,11 @@ class MMORPGServerEngine extends ServerEngine {
                 //}
         //);
 
-        this.createNpc('Gandalf')
+        this.createNpc('Gandalf');
+
+        for (let i = 0; i < 2; i++) {
+            this.createMob('foo');
+        }
 
         this.gameEngine.on('killed', (e) => {
 
@@ -44,6 +50,10 @@ class MMORPGServerEngine extends ServerEngine {
 
     createNpc(name) {
         let npc = this.gameEngine.makeNpc(name);
+    }
+
+    createMob(name) {
+        let npc = this.gameEngine.makeMob(name);
     }
 
     onPlayerConnected(socket) {

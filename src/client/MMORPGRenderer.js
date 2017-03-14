@@ -8,6 +8,8 @@ const Character = require('../common/Character');
 const CharacterActor = require('./CharacterActor');
 const NPC = require('../common/NPC');
 const NPCActor = require('./NPCActor');
+const Mob = require('../common/Mob');
+const MobActor = require('./MobActor');
 //const TreeGenerator = require('./TreeGenerator');
 const randomColor = require('./randomColor');
 const RenderLoader = require('./RenderLoader');
@@ -323,6 +325,13 @@ class MMORPGRenderer extends Renderer {
                 this.addOffscreenIndicator(objData);
             }
 
+        } else if (objData.class == Mob) {
+
+            let mobActor = new MobActor(this);
+            mesh = mobActor.mesh;
+            this.meshes[objData.id] = mesh;
+            mesh.id = objData.id;
+            mesh.data = objData;
         } else if (objData.class == NPC) {
 
             let npcActor = new NPCActor(this);

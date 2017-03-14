@@ -13,6 +13,7 @@ class MMORPGClientEngine extends ClientEngine {
 
         this.serializer.registerClass(require('../common/Character'));
         this.serializer.registerClass(require('../common/NPC'));
+        this.serializer.registerClass(require('../common/Mob'));
 
         this.gameEngine.on('client__preStep', this.preStep.bind(this));
     }

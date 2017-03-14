@@ -33,12 +33,32 @@ class RenderLoader {
 
     preloadAssets() {
         this.loadMesh('shirt', 'lady.babylon', this.onLoaded.bind(this));
+        this.loadMesh('mob', 'ninja.babylon', this.onMobLoaded.bind(this));
         this.loadMesh('viking', 'viking.babylon', this.onVikingLoaded.bind(this));
         //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
 
         setTimeout(function() {
             this.loader.load();
         }.bind(this), 1000);
+    }
+
+    onMobLoaded(task) {
+
+        this.assets[task.name] = [];
+        console.group();
+        for (var i=0; i<task.loadedMeshes.length; i++ ){
+            var mesh = task.loadedMeshes[i];
+            mesh.rotationQuaternion = null;
+            mesh.rotation.x = -Math.PI/2;
+            mesh.isPickable = false;
+            mesh.setEnabled(false);
+            this.scene.stopAnimation(mesh);
+            this.assets[task.name].push(mesh);
+            console.log(`%c Loaded : ${mesh.name}`, 'background: #333; color: #bada55');
+        }
+        this.addAnimation('mob', 'idle', 0, 39);
+        this.addAnimation('mob', 'walk', 45, 85);
+        console.log(`%c Finished : ${task.name}`, 'background: #333; color: #bada55');
     }
 
     onVikingLoaded(t) {

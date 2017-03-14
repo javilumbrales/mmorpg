@@ -1,8 +1,10 @@
 const BABYLON = require("babylonjs");
+const Actor = require('./Actor');
 
-class CharacterActor{
+class CharacterActor extends Actor {
 
     constructor(renderer, kind) {
+        super();
         this.Epsilon = 1;
         this.kind = kind;
 
@@ -280,16 +282,6 @@ class CharacterActor{
             }
 
         }.bind(this), 20);
-    }
-
-    /**
-     * Play the given animation if skeleton found
-     */
-    playAnimation(mesh, asset, name, loop, speed) {
-        //mesh.beginAnimation(name, loop, speed);
-        let animation = this.renderer.loader.animations[asset][name];
-        mesh.getScene().beginAnimation(mesh, animation.from, animation.to, loop, speed);
-        console.log('playAnimation', animation, mesh, name, loop, speed);
     }
 
 }

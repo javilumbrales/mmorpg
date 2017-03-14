@@ -4,6 +4,7 @@ const GameEngine = require('incheon').GameEngine;
 const TwoVector = require('incheon').serialize.TwoVector;
 const Character = require('./Character');
 const NPC = require('./NPC');
+const Mob = require('./Mob');
 const Timer = require('./Timer');
 
 
@@ -236,6 +237,18 @@ class MMORPGGameEngine extends GameEngine {
             "z": Math.floor(Math.random()*(this.worldSettings.height-200) / 2)
         };
 
+    }
+
+    makeMob(name) {
+
+        console.log('makeMob', name);
+        let cords = this.getRandCoords()
+
+        // todo playerId should be called ownerId
+        let mob = new Mob(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y']);
+        mob.name = name;
+        this.addObjectToWorld(mob);
+        console.log(`Mob added: ${mob.toString()}`);
     }
 
     makeNpc(name) {
