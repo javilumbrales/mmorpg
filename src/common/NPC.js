@@ -35,7 +35,8 @@ class NPC extends DynamicObject {
 
         this.gameEngine = gameEngine;
 
-        this.health = this.original_health = 100;
+        this.health = this.original_health = 10000;
+        this.attack = 100;
         this.shield = this.original_shield = 5;
         this.animations = [];
         this.maxDistanceToTarget = 15;

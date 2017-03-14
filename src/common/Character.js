@@ -42,6 +42,7 @@ class Character extends DynamicObject {
 
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;
+        this.attack = 10;
         this.animations = [];
         this.maxDistanceToTarget = 15;
 

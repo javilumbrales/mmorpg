@@ -71,7 +71,7 @@ class MMORPGGameEngine extends GameEngine {
                             console.log('Player position:', playerCharacter.x, playerCharacter.height, playerCharacter.y);
                             console.log('Target position:', attackTarget.x, attackTarget.height, attackTarget.y);
                             if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
-                                let damage = (playerCharacter.skills[id]['action']['act'] - attackTarget.shield);
+                                let damage = (playerCharacter.attack - attackTarget.shield);
                                 attackTarget.health -= damage;
                                 console.log('attacking target!', attackTarget.health, attackTarget.original_health);
                                 this.emit('attacking', { "msg": 'Attacking ' + attackTarget.name + ' damage done ' + damage});
