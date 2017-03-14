@@ -66,15 +66,11 @@ class MMORPGRenderer extends Renderer {
             this.engine = new BABYLON.Engine(this.canvas, true);
             this.engine.enableOfflineSupport = false;
 
-            this.engine.displayLoadingUI();
-            this.engine.loadingUIText = "From the creators of the epic Lineage 2 C2 - BloodRage Server...";
-
-
             // Create scene
             this.scene = new BABYLON.Scene(this.engine);
             this.scene.collisionsEnabled = true;
 
-            this.loader = new RenderLoader(this.scene, readyCallback);
+            this.loader = new RenderLoader(this.engine, this.scene, readyCallback);
             this.loader.preloadAssets(readyCallback);
             this.setupListeners();
         }

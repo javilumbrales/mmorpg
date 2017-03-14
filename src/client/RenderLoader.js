@@ -2,7 +2,12 @@ const BABYLON = require("babylonjs");
 
 class RenderLoader {
 
-    constructor(scene, onFinish) {
+    constructor(engine, scene, onFinish) {
+        let music = new BABYLON.Sound("Loading", "assets/audio/intro.ogg", scene, null, { loop: false, autoplay: true });
+        engine.displayLoadingUI();
+        engine.loadingUIText = "From the creators of the epic Lineage 2 C2 - BloodRage Server...";
+
+
         this.scene = scene;
         this.loader = new BABYLON.AssetsManager(this.scene);
         //this.loader.useDefaultLoadingScreen = false;
