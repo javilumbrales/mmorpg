@@ -7,6 +7,21 @@ class RenderLoader {
         engine.displayLoadingUI();
         engine.loadingUIText = "From the creators of the epic Lineage 2 C2 - BloodRage Server...";
 
+        setTimeout(function() {
+            engine.loadingUIText = "Alberto aka 'Valanar', the game master...";
+        }.bind(this), 1500);
+
+        setTimeout(function() {
+            engine.loadingUIText = "Javier aka 'p0w3rf1y', the bsoe's master...";
+        }.bind(this), 3200);
+
+        setTimeout(function() {
+            engine.loadingUIText = "An innovative creation, defying the laws of nature...";
+        }.bind(this), 4800);
+
+        setTimeout(function() {
+            engine.loadingUIText = "Get ready for an unforeseen gaming experience...";
+        }.bind(this), 6000);
 
         this.scene = scene;
         this.loader = new BABYLON.AssetsManager(this.scene);
@@ -21,7 +36,9 @@ class RenderLoader {
         this.loadMesh('viking', 'viking.babylon', this.onVikingLoaded.bind(this));
         //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
 
-        this.loader.load();
+        setTimeout(function() {
+            this.loader.load();
+        }.bind(this), 6000);
     }
 
     onVikingLoaded(t) {
