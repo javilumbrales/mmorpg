@@ -4,46 +4,23 @@ const Actor = require('./Actor');
 class CharacterActor extends Actor {
 
     constructor(renderer, kind) {
-        super();
-        this.Epsilon = 1;
-        this.kind = kind;
+        super(renderer, 'player');
+
         this.assetName = 'viking';
+        this.kind = kind;
 
-        this.renderer = renderer;
-        this.gameEngine = renderer.gameEngine;
-        this.camera = renderer.camera;
+        this.animatedObject = this.renderer.loader.assets[this.assetName];
 
-        this.mesh = BABYLON.MeshBuilder.CreateBox('mesh', {}, renderer.scene);
-        this.mesh.isVisible = false;
-        this.mesh.position = new BABYLON.Vector3(-13, 1, -13);
-        this.mesh.gravity = new BABYLON.Vector3(0, -9.81, 0);
-        this.mesh.checkCollisions = true;
-        this.mesh.collisionsEnabled = true;
-        this.mesh.ellipsoid = new BABYLON.Vector3(0.5, 1.0, 0.5);
-        this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 1.0, 0);
+        let id = this.meshName + '-1';
+        let player = this.animatedObject[0].createInstance(id);
 
-
-
-        this.animatedObject = this.renderer.loader.assets['viking'];
-        let player = this.animatedObject[0].createInstance('player');
-
-        player.name ='player';
         player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
         player.isVisible = true;
-        player.position.y = -1;
+        player.isPickable = false;
+        //player.position.y = -1;
         player.parent = this.mesh;
+
         this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
-
-        // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
-        //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
-        //player.position.y=0;
-        //player.isVisible = true;
-        //player.parent = this.mesh;
-
-        this.scene = renderer.scene;
-        this.isMoving = false;
-        this.mesh.isPickable = true;
-        this.health = document.querySelector('#health');
 
         // Add move function to the character
         this.mesh.getScene().registerBeforeRender(function () {
@@ -51,8 +28,6 @@ class CharacterActor extends Actor {
             this.moveToDestination();
         }.bind(this));
 
-        //keep a reference to the actor from the mesh
-        this.mesh.actor = this;
     }
 
 
@@ -87,20 +62,13 @@ class CharacterActor extends Actor {
         document.querySelector('.hp-bar .health-name').innerHTML = this.name;
     }
 
-    destroy(){
-        return new Promise((resolve) =>{
+    destroy() {
+        super.destroy();
 
-            if (this.nameText) {
-                this.nameText.dispose();
-                this.nameText = null;
-            }
-
-            setTimeout(()=>{
-                this.mesh.dispose();
-                this.mesh = null;
-                resolve();
-            }, 1000);
-        });
+        if (this.nameText) {
+            this.nameText.dispose();
+            this.nameText = null;
+        }
     }
 
     animateShield() {

@@ -63,10 +63,10 @@ class MouseControls{
         });
         if (this.renderer.playerCharacter && pickResult.pickedPoint) {
             if (pickResult.pickedMesh.name == 'player' || pickResult.pickedMesh.name == 'mob') {
-                this.renderer.setTarget(pickResult.pickedMesh.parent);
+                this.renderer.setTarget(pickResult.pickedMesh);
             } else if (pickResult.pickedMesh.name =='npc') {
-                this.renderer.showDialog(pickResult.pickedMesh.parent);
-                this.renderer.setTarget(pickResult.pickedMesh.parent);
+                this.renderer.showDialog(pickResult.pickedMesh);
+                this.renderer.setTarget(pickResult.pickedMesh);
             }
 
             // TODO: Fix this to be able to take stairs and so on

@@ -24,6 +24,7 @@ class MMORPGRenderer extends Renderer {
         super(gameEngine, clientEngine);
         this.meshes = {};
         this.isReady = false;
+        this.debugMode = true;
 
         // these define how many gameWorlds the player ship has "scrolled" through
         this.bgPhaseX = 0;
@@ -31,11 +32,6 @@ class MMORPGRenderer extends Renderer {
     }
 
     init() {
-
-        //if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') {
-            //this.onDOMLoaded();
-        //} else {
-        //}
 
         return new Promise((resolve, reject)=>{
             document.addEventListener('DOMContentLoaded', ()=>{

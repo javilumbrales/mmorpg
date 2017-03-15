@@ -1,7 +1,39 @@
 const BABYLON = require("babylonjs");
 
 class  Actor{
-    constructor() {    }
+    constructor(renderer, meshName) {
+        this.Epsilon = 1;
+        this.renderer = renderer;
+        this.scene = renderer.scene;
+        this.gameEngine = renderer.gameEngine;
+        this.camera = renderer.camera;
+        this.meshName = meshName;
+
+        this.mesh = BABYLON.MeshBuilder.CreateSphere(meshName, {diameter: 2, diameterY: 15}, this.scene);
+        this.mesh.isPickable = true;
+        this.mesh.visibility = this.renderer.debugMode ? 1 : 0;
+        this.mesh.position = new BABYLON.Vector3(-13, 1, -13);
+        this.mesh.gravity = new BABYLON.Vector3(0, -9.81, 0);
+        this.mesh.checkCollisions = true;
+        this.mesh.collisionsEnabled = true;
+        this.mesh.ellipsoid = new BABYLON.Vector3(0.5, 1.0, 0.5);
+        this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 1.0, 0);
+        //keep a reference to the actor from the mesh
+        this.mesh.actor = this;
+
+        this.isMoving = false;
+        this.health = document.querySelector('#health');
+    }
+
+    destroy() {
+        return new Promise((resolve) =>{
+            setTimeout(()=>{
+                this.mesh.dispose();
+                this.mesh = null;
+                resolve();
+            }, 1000);
+        });
+    }
 
     renderStep(position) {
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
@@ -13,7 +45,7 @@ class  Actor{
             }
             let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
 
-            console.log('renderStep object at', delta);
+            //console.log('renderStep object at', delta);
 
             this.mesh.position = delta;
         } else {
@@ -61,9 +93,8 @@ class  Actor{
      * Play the given animation if skeleton found
      */
     playAnimation(mesh, asset, name, loop, speed) {
-        //mesh.beginAnimation(name, loop, speed);
         let animation = this.renderer.loader.animations[asset][name];
-        console.log('playAnimation', animation, mesh, name, loop, speed);
+        //console.log('playAnimation', animation, mesh, name, loop, speed);
         for (let j = 0; j < mesh.length; j++) {
             mesh[j].getScene().beginAnimation(mesh[j], animation.from, animation.to, loop, speed);
         }
