@@ -267,11 +267,15 @@ class MMORPGRenderer extends Renderer {
         this.emit('target', {"id": obj.id});
     }
     showTargetHeal(target) {
-        if (target) {
             var health = document.querySelector('#target-health');
+        if (target) {
             var currentHealth = target.health * 100 / target.original_health;
             health.style.width = parseFloat(currentHealth) + '%';
+            if (target.health == 0) {
+                console.log('died!');
+            }
         } else {
+            health.style.width = '0%';
             this.playerCharacter.target = null;
             console.log('target not found, probably killed');
         }

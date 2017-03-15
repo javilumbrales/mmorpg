@@ -37,9 +37,9 @@ class RenderLoader {
         this.loadMesh('viking', 'viking.babylon', this.onVikingLoaded.bind(this));
         //var music = new BABYLON.Sound("Music", "assets/audio/music.mp3", this.scene, null, { loop: true, autoplay: true });
 
-        setTimeout(function() {
+        //setTimeout(function() {
             this.loader.load();
-        }.bind(this), 1000);
+        //}.bind(this), 1000);
     }
 
     onMobLoaded(task) {

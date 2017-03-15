@@ -68,22 +68,7 @@ class MMORPGGameEngine extends GameEngine {
                     if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
                         let attackTarget = this.world.objects[playerCharacter.target];
                         if (attackTarget) {
-                            let distanceToTarget = this.distance(new TwoVector(playerCharacter.x, playerCharacter.y), new TwoVector(attackTarget.x, attackTarget.y));
-                            console.log('Player position:', playerCharacter.x, playerCharacter.height, playerCharacter.y);
-                            console.log('Target position:', attackTarget.x, attackTarget.height, attackTarget.y);
-                            if (distanceToTarget < playerCharacter.maxDistanceToTarget) {
-                                let damage = (playerCharacter.attack - attackTarget.shield);
-                                attackTarget.health -= damage;
-                                console.log('attacking target!', attackTarget.health, attackTarget.original_health);
-                                this.emit('attacking', { "msg": 'Attacking ' + attackTarget.name + ' damage done ' + damage});
-                                if (attackTarget.health <= 0) {
-                                    playerCharacter.target = null;
-                                    this.emit('killed', { "character": attackTarget });
-                                }
-                            } else {
-                                console.log('cannot attack target!', distanceToTarget);
-                                this.emit('attacking', { "msg": 'Target too far ' + distanceToTarget});
-                            }
+                            this.attack(playerCharacter, attackTarget);
                         }
                     }
                     break;
@@ -151,6 +136,28 @@ class MMORPGGameEngine extends GameEngine {
 
         //this.on('postStep', this.afterStep.bind(this));
     };
+
+    attack(a, t) {
+
+        let distanceToTarget = this.distance(new TwoVector(a.x, a.y), new TwoVector(t.x, t.y));
+        console.log('Attacker position:', a.x, a.height, a.y);
+        console.log('Target position:', t.x, t.height, t.y);
+        if (distanceToTarget < a.maxDistanceToTarget) {
+            let damage = (a.attack - t.shield);
+            t.health -= damage;
+            console.log('attacking target!', t.health, t.original_health);
+            this.emit('attacking', { "msg": 'Attacking ' + t.name + ' damage done ' + damage});
+            if (t.health <= 0) {
+                a.target = null;
+                setTimeout((evt)=> {
+                    this.emit('killed', { "object": t });
+                }, 1000);
+            }
+        } else {
+            console.log('cannot attack target!', distanceToTarget);
+            this.emit('attacking', { "msg": 'Target too far ' + distanceToTarget});
+        }
+    }
 
     moveToTarget(obj) {
         obj.isMoving = true;
@@ -247,6 +254,7 @@ class MMORPGGameEngine extends GameEngine {
         // todo playerId should be called ownerId
         let mob = new Mob(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y']);
         mob.name = name;
+        mob.attachAI();
         this.addObjectToWorld(mob);
         console.log(`Mob added: ${mob.toString()}`);
     }

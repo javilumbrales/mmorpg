@@ -4,6 +4,7 @@ const Actor = require('./Actor');
 class MobActor extends Actor {
 
     assembleMesh(name, meshes) {
+        this.assetName = 'mob';
         //var mob = new BABYLON.MeshBuilder.CreateBox(name, {height: 20}, this.scene);
         var mob = BABYLON.Mesh.CreateSphere("red", 4, 8, this.scene);
         mob.visibility = 0;
@@ -16,10 +17,9 @@ class MobActor extends Actor {
 
             var newmesh = meshes[i].createInstance(meshes[i].name);
             newmesh.isPickable = false;
-            //newmesh.setEnabled(false);
             newmesh.scaling = new BABYLON.Vector3(0.35, 0.35, 0.35);
 
-            //// Clone animations if any
+            // Clone animations if any
             if (meshes[i].skeleton) {
                 //newmesh.skeleton = meshes[i].skeleton.clone();
                 mob.skeletons.push(newmesh.skeleton);
@@ -57,9 +57,10 @@ class MobActor extends Actor {
 
         mob.name ='mob';
         //mob.scaling = new BABYLON.Vector3(0.035, 0.035, 0.035);
-        mob.position.y = 0;
+        mob.position.y = -1;
         mob.parent = this.mesh;
         this.playAnimation(mob, 'mob', 'idle', true, 1);
+        this.animatedObject = mob;
 
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
         //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
@@ -75,18 +76,7 @@ class MobActor extends Actor {
         this.mesh.actor = this;
     }
 
-    renderStep(position) {
 
-    }
-
-    /**
-     * The character looks at the given position, but rotates only along Y-axis
-     * */
-    lookAt(value){
-        var dv = value.subtract(this.mesh.position);
-        var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
-        this.mesh.rotation.y = yaw ;
-    }
 
     setName(name){
         if (this.name) {
@@ -162,6 +152,21 @@ class MobActor extends Actor {
         history.pushState("", document.title, window.location.pathname);
         document.location.href += '#openModal'
 
+    }
+    /**
+     * Play the given animation if skeleton found
+     */
+    playAnimation(mesh, asset, name, loop, speed) {
+        speed = 2.2;
+        //mesh.beginAnimation(name, loop, speed);
+        let animation = this.renderer.loader.animations[asset][name];
+        console.log('Mob::playAnimation', animation, mesh, name, loop, speed);
+        //for (let j = 0; j < mesh.length; j++) {
+            //mesh[j].getScene().beginAnimation(mesh[j], animation.from, animation.to, loop, speed);
+        //}
+        for (var i=0; i<mesh.skeletons.length; i++) {
+            this.animatable = this.scene.beginAnimation(mesh.skeletons[i], animation.from, animation.to, true, speed);
+        }
     }
 
 }

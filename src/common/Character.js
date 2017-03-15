@@ -44,11 +44,11 @@ class Character extends DynamicObject {
         this.shield = this.original_shield = 5;
         this.attack = 10;
         this.animations = [];
-        this.maxDistanceToTarget = 15;
+        this.maxDistanceToTarget = 18;
 
         this.skills = {
             '1':{'duration': 1, 'action': {'param': 'attack', 'act':10, 'deact':0}},
-            '2':{'duration': 100, 'action': {'param': 'heal', 'act': 4, 'deact': 0}},
+            '2':{'duration': 100, 'action': {'param': 'health', 'act': 4, 'deact': 0}},
             '3':{'duration': 1000, 'action': {'param': 'shield', 'act': 4, 'deact': -4}},
             '4':{'duration': 15, 'action': {'param': 'teleport', 'act':true, 'deact':false}},
         };
@@ -58,7 +58,9 @@ class Character extends DynamicObject {
 
     applySkill(id, activate) {
         let skill = this.skills[id]['action'];
-        this[skill['param']] = this[skill['param']] + activate ? skill['act'] : skill['deact'];
+        console.log('applySkill before', this[skill['param']]);
+        this[skill['param']] = this[skill['param']] + (activate ? skill['act'] : skill['deact']);
+        console.log('applySkill after', this[skill['param']]);
     }
 
     destroy() {
@@ -68,7 +70,7 @@ class Character extends DynamicObject {
         }
     }
 
-    get maxSpeed() { return 1.0; }
+    get maxSpeed() { return 0.1; }
 }
 
 module.exports = Character;

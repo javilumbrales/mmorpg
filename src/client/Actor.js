@@ -5,18 +5,29 @@ class  Actor{
 
     renderStep(position) {
         if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
-           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
 
-           console.log('renderStep object at', delta);
+            if (!this.isMoving){
+                this.lookAt(new BABYLON.Vector3(position.x, position.y, position.z));
+                this.playAnimation(this.animatedObject, this.assetName, 'walk', true, 1);
+                this.isMoving = true;
+            }
+            let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
 
-           this.mesh.position = delta;
+            console.log('renderStep object at', delta);
+
+            this.mesh.position = delta;
+        } else {
+            if (this.isMoving) {
+                this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
+                this.isMoving = false;
+            }
         }
     }
 
     moveToDestination() {
         if (this.destination) {
             if (!this.isMoving) {
-                this.playAnimation(this.playerModel, 'viking', 'walk', true, 1);
+                this.playAnimation(this.animatedObject, this.assetName, 'walk', true, 1);
                 this.isMoving = true;
             }
             //console.log('moveToDestination', this.mesh.position, this.destination);
@@ -30,7 +41,7 @@ class  Actor{
                 this.mesh.moveWithCollisions(moveVector);
             } else {
                 this.destination = null;
-                this.playAnimation(this.playerModel, 'viking', 'idle', true, 1);
+                this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
                 this.isMoving = false;
             }
         }
@@ -52,8 +63,10 @@ class  Actor{
     playAnimation(mesh, asset, name, loop, speed) {
         //mesh.beginAnimation(name, loop, speed);
         let animation = this.renderer.loader.animations[asset][name];
-        mesh.getScene().beginAnimation(mesh, animation.from, animation.to, loop, speed);
         console.log('playAnimation', animation, mesh, name, loop, speed);
+        for (let j = 0; j < mesh.length; j++) {
+            mesh[j].getScene().beginAnimation(mesh[j], animation.from, animation.to, loop, speed);
+        }
     }
 
 }

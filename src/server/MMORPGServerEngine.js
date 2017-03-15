@@ -34,15 +34,15 @@ class MMORPGServerEngine extends ServerEngine {
 
         this.createNpc('Gandalf');
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 20; i++) {
             this.createMob('foo');
         }
 
         this.gameEngine.on('killed', (e) => {
 
-            console.log(`player killed: ${e.character.toString()}`);
-            this.updateStatus({"status":"standard", "message": `RIP: ${e.character.name}`});
-            this.gameEngine.removeObjectFromWorld(e.character.id);
+            console.log(`player killed: ${e.object.toString()}`);
+            this.updateStatus({"status":"standard", "message": `RIP: ${e.object.name}`});
+            this.gameEngine.removeObjectFromWorld(e.object.id);
         });
 
         this.players = {};

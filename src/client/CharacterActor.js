@@ -7,6 +7,7 @@ class CharacterActor extends Actor {
         super();
         this.Epsilon = 1;
         this.kind = kind;
+        this.assetName = 'viking';
 
         this.renderer = renderer;
         this.gameEngine = renderer.gameEngine;
@@ -23,15 +24,15 @@ class CharacterActor extends Actor {
 
 
 
-        this.playerModel = this.renderer.loader.assets['viking'][0];
-        let player = this.playerModel.createInstance('player');
+        this.animatedObject = this.renderer.loader.assets['viking'];
+        let player = this.animatedObject[0].createInstance('player');
 
         player.name ='player';
         player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
         player.isVisible = true;
         player.position.y = -1;
         player.parent = this.mesh;
-        this.playAnimation(this.playerModel, 'viking', 'idle', true, 1);
+        this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
 
         // create a built-in "sphere" shape; its constructor takes 5 params: name, width, depth, subdivisions, scene
         //let player = BABYLON.Mesh.CreateSphere('player', 16, 2, renderer.scene);
@@ -54,47 +55,6 @@ class CharacterActor extends Actor {
         this.mesh.actor = this;
     }
 
-    renderStep(position) {
-        if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
-           let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
-
-           console.log('renderStep object at', delta);
-
-           this.mesh.position = delta;
-        }
-    }
-
-    moveToDestination() {
-        if (this.destination) {
-            if (!this.isMoving) {
-                this.playAnimation(this.playerModel, 'viking', 'walk', true, 1);
-                this.isMoving = true;
-            }
-            //console.log('moveToDestination', this.mesh.position, this.destination);
-            var moveVector = this.destination.subtract(this.mesh.position);
-            var distance = moveVector.length();
-
-            //console.log(distance);
-            if (distance > this.Epsilon) {
-                moveVector = moveVector.normalize();
-                moveVector = moveVector.scale(0.3);
-                this.mesh.moveWithCollisions(moveVector);
-            } else {
-                this.destination = null;
-                this.playAnimation(this.playerModel, 'viking', 'idle', true, 1);
-                this.isMoving = false;
-            }
-        }
-    }
-
-    /**
-     * The character looks at the given position, but rotates only along Y-axis
-     * */
-    lookAt(value){
-        var dv = value.subtract(this.mesh.position);
-        var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
-        this.mesh.rotation.y = yaw ;
-    }
 
     setName(name){
         if (this.name) {
@@ -264,7 +224,7 @@ class CharacterActor extends Actor {
         this.teleporting = true;
         this.teleportInc = 100;
 
-        BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.playerModel, 'visibility', 30, 70, 1, 0.1, 0);
+        BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.animatedObject[0], 'visibility', 30, 70, 1, 0.1, 0);
 
         this.healAnimation = setInterval(function() {
             if(this.teleportInc-- <= 0) {
@@ -277,7 +237,7 @@ class CharacterActor extends Actor {
                 //this.mesh.position.x = destination.x;
                 //this.mesh.position.y = destination.y;
                 //this.mesh.position.z = destination.z;
-                BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.playerModel, 'visibility', 30, 70, 0.1, 1, 0);
+                BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.animatedObject[0], 'visibility', 30, 70, 0.1, 1, 0);
                 this.teleporting = null;
             }
 
