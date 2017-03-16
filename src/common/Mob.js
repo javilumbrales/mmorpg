@@ -42,7 +42,7 @@ class Mob extends DynamicObject {
         this.shield = this.original_shield = 5;
         this.animations = [];
         this.maxDistanceToTarget = 10;
-        this.aggresiveRange = 800;
+        this.aggresiveRange = 1000;
 
 
         this.running = {};

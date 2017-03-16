@@ -6,21 +6,21 @@ $breakpoint-tablet: 569px 1280px;
 $breakpoint-desktop: min-width 1281px;
 
 html,body{
-	padding: 0;
-	margin: 0;
-	overflow: hidden;
-	font-family: "proxima-nova", sans-serif;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: "proxima-nova", sans-serif;
 }
 
 #guiContainer, #offscreenIndicatorContainer{
     opacity: 0;
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	z-index: 5;
-	pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
 }
 
 
@@ -29,203 +29,204 @@ html,body{
     height: 100%;
     margin: 0;
     padding: 0;
+    cursor: url(assets/images/cursor.png), auto;
 }
 
 
 .offscreenIndicator{
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 30px;
-	height: 30px;
-	opacity: 0;
-	background-image: url('assets/icons/offscreenIndicator.svg');
-	background-size: cover;
-	background-position: center;
-	background-repeat: no-repeat;
-	border-radius: 30px;
-	transition: opacity 0.3s ease-in;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 30px;
+    height: 30px;
+    opacity: 0;
+    background-image: url('assets/icons/offscreenIndicator.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 30px;
+    transition: opacity 0.3s ease-in;
 }
 
 #tryAgain, #joinGame, #reconnect{
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	opacity: 0;
-	pointer-events: none;
-	transform: translateX(-50%) translateY(-50%);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(-50%);
 }
 
 #joinGame {
-	pointer-events: all;
+    pointer-events: all;
 }
 
 button{
 
-	position: relative;
-	background-color: rgba(#68b2f8, 0.2);
-	padding: 0.2rem 1.8rem 0.1rem 1.8rem;
-	margin: 2rem auto;
-	font-size: 1.2rem;
-	transition: all 0.5s ease-out;
-	margin-right: 1.5rem;
-	border: 0;
-	color: white;
-	outline: none;
-	white-space: nowrap;
+    position: relative;
+    background-color: rgba(#68b2f8, 0.2);
+    padding: 0.2rem 1.8rem 0.1rem 1.8rem;
+    margin: 2rem auto;
+    font-size: 1.2rem;
+    transition: all 0.5s ease-out;
+    margin-right: 1.5rem;
+    border: 0;
+    color: white;
+    outline: none;
+    white-space: nowrap;
 
-	&:before{
-		content: "";
-		position: absolute;
-		z-index: 10;
-		left: -3rem;
-		top: -2.4rem;
-		width: 6rem;
-		height: 7rem;
-		background-image: url(assets/images/cta_glow_left.png);
-		background-repeat: no-repeat;
-		background-position: top;
-		background-size: auto;
-		pointer-events: none;
-	}
+    &:before{
+        content: "";
+        position: absolute;
+        z-index: 10;
+        left: -3rem;
+        top: -2.4rem;
+        width: 6rem;
+        height: 7rem;
+        background-image: url(assets/images/cta_glow_left.png);
+        background-repeat: no-repeat;
+        background-position: top;
+        background-size: auto;
+        pointer-events: none;
+    }
 
-	&:after{
-		content: "";
-		position: absolute;
-		z-index: 10;
-		right: -3rem;
-		top: -2.4rem;
-		width: 6rem;
-		height: 7rem;
-		background-image: url(assets/images/cta_glow_left.png);
-		background-repeat: no-repeat;
-		background-position: top;
-		background-size: auto;
-		transform: scaleX(-1);
-		pointer-events: none;
-	}
+    &:after{
+        content: "";
+        position: absolute;
+        z-index: 10;
+        right: -3rem;
+        top: -2.4rem;
+        width: 6rem;
+        height: 7rem;
+        background-image: url(assets/images/cta_glow_left.png);
+        background-repeat: no-repeat;
+        background-position: top;
+        background-size: auto;
+        transform: scaleX(-1);
+        pointer-events: none;
+    }
 
-	a{
-		width: 100%;
-		padding: 0.2rem 0.5rem;
-		color: #fff;
-		transition: all 0.1s ease-in;
-	}
+    a{
+        width: 100%;
+        padding: 0.2rem 0.5rem;
+        color: #fff;
+        transition: all 0.1s ease-in;
+    }
 
-	&:hover{
-		background: rgba(#68b2f8, 0.4);
-		a{
-			padding: 0.2rem 0.8rem;
-		}
-	}
+    &:hover{
+        background: rgba(#68b2f8, 0.4);
+        a{
+            padding: 0.2rem 0.8rem;
+        }
+    }
 }
 
 .lostGame #tryAgain{
-	opacity: 1;
-	pointer-events: all;
+    opacity: 1;
+    pointer-events: all;
 }
 
 
 .tutorial .keysContainer{
-	&:before, &:after{
-		opacity: 1;
-	}
+    &:before, &:after{
+        opacity: 1;
+    }
 }
 
 .hud{
-	position: absolute;
-	top: 60px;
-	left: 0;
-	width: 20rem;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 20rem;
     height: 60px;
-	font-size: 12px;
-	padding: 1rem;
-	color: #fff;
-	font-family: arial, sans-serif;
-	opacity: 0;
+    font-size: 12px;
+    padding: 1rem;
+    color: #fff;
+    font-family: arial, sans-serif;
+    opacity: 0;
 
-	transition: all 0.5s ease-in;
+    transition: all 0.5s ease-in;
 }
 
 .status{
-	pointer-events: all;
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	width: 20rem;
-	height: 5rem;
-	font-size: 12px;
-	padding: 1rem;
-	color: #fff;
-	font-family: arial, sans-serif;
-	opacity: 0;
+    pointer-events: all;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 20rem;
+    height: 5rem;
+    font-size: 12px;
+    padding: 1rem;
+    color: #fff;
+    font-family: arial, sans-serif;
+    opacity: 0;
     background: gray;
 
-	transition: all 0.5s ease-in;
+    transition: all 0.5s ease-in;
 
     .updates {
         overflow-y: auto;
         height: inherit;
     }
 
-	&:before{
-		content: "Status";
-		position: absolute;
-		top: -1.2rem;
-		left: 1rem;
-		font-size: 14px;
-		font-weight: bold;
-		opacity: 0.9;
-	}
+    &:before{
+        content: "Status";
+        position: absolute;
+        top: -1.2rem;
+        left: 1rem;
+        font-size: 14px;
+        font-weight: bold;
+        opacity: 0.9;
+    }
 
-	.line{
-		transition: all 0.2s ease-in;
-		transform: translateY(0);
-		opacity: 0.3;
-	}
+    .line{
+        transition: all 0.2s ease-in;
+        transform: translateY(0);
+        opacity: 0.3;
+    }
 
-	.line.you{
-		color: #efff00;
-		opacity: 0.4;
-	}
+    .line.you{
+        color: #efff00;
+        opacity: 0.4;
+    }
 }
 
 .keysContainer{
-	pointer-events: none;
+    pointer-events: none;
 
-	position: absolute;
-	bottom: 50px;
-	left: 50%;
-	transform: translateX(-50%);
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
 
-	&:before, &:after{
-		content: "";
-		display: inline-block;
-		opacity: 0;
-		transition: all 0.5s ease-in;
-	}
+    &:before, &:after{
+        content: "";
+        display: inline-block;
+        opacity: 0;
+        transition: all 0.5s ease-in;
+    }
 
-	&:before{
-		margin-right: 3rem;
-	}
+    &:before{
+        margin-right: 3rem;
+    }
 }
 
 .buttonsContainer{
-	pointer-events: all;
-	opacity: 0;
+    pointer-events: all;
+    opacity: 0;
     cursor:pointer;
 
-	transition: all 0.5s ease-in;
+    transition: all 0.5s ease-in;
 
-	background: #fff;
-	//width: 10rem;
-	height: 3rem;
-	position: absolute;
-	bottom: 1rem;
-	left: 50%;
-	transform: translateX(-50%);
-	//border: 3px solid #ff2f95;
-	//border-radius: 1rem;
+    background: #fff;
+    //width: 10rem;
+    height: 3rem;
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    //border: 3px solid #ff2f95;
+    //border-radius: 1rem;
     border: 1px solid red;
 
     .skill {
@@ -238,72 +239,72 @@ button{
 }
 .attack{
     background-image: url("assets/images/attack.png");
-	&:before{
+    &:before{
         color: #ff2f95;
-		transform: translateX(-50%) translateY(-50%);
-	}
+        transform: translateX(-50%) translateY(-50%);
+    }
 }
 
 .shield{
     background-image: url("assets/images/shield.png");
     &:before{
-		color: #ff2f45;
-		transform: translateX(-50%) translateY(-50%);
-	}
+        color: #ff2f45;
+        transform: translateX(-50%) translateY(-50%);
+    }
 }
 
 .heal{
-	background-image: url("assets/images/heal.png");
-	&:before{
-		color: #ff3f95;
-		transform: translateX(-50%) translateY(-50%);
-	}
+    background-image: url("assets/images/heal.png");
+    &:before{
+        color: #ff3f95;
+        transform: translateX(-50%) translateY(-50%);
+    }
 }
 
 
 .pc .keysContainer{
-	&:after{
-		width: 103px;
-		height: 91px;
-		background-image: url("assets/images/pc_keys.png");
-	}
+    &:after{
+        width: 103px;
+        height: 91px;
+        background-image: url("assets/images/pc_keys.png");
+    }
 
-	&:before{
-		width: 175px;
-		height: 55px;
-		background-image: url("assets/images/pc_space.png");
-	}
+    &:before{
+        width: 175px;
+        height: 55px;
+        background-image: url("assets/images/pc_space.png");
+    }
 }
 
 .mac .keysContainer{
-	&:after{
-		width: 119px;
-		height: 64px;
-		background-image: url("assets/images/mac_keys.png");
-	}
+    &:after{
+        width: 119px;
+        height: 64px;
+        background-image: url("assets/images/mac_keys.png");
+    }
 
-	&:before{
-		width: 193px;
-		height: 64px;
-		background-image: url("assets/images/mac_space.png");
-	}
+    &:before{
+        width: 193px;
+        height: 64px;
+        background-image: url("assets/images/mac_space.png");
+    }
 }
 
 h2{
-	position: absolute;
-	box-sizing: border-box;
-	top: 29%;
-	font-weight: 300;
-	font-size: 25px;
-	text-align: center;
-	width: 100%;
-	color: #fff;
-	transition: all 0.5s ease-in;
-	padding: 0 3rem;
+    position: absolute;
+    box-sizing: border-box;
+    top: 29%;
+    font-weight: 300;
+    font-size: 25px;
+    text-align: center;
+    width: 100%;
+    color: #fff;
+    transition: all 0.5s ease-in;
+    padding: 0 3rem;
 
-	@include breakpoint(($breakpoint-desktop)){
-		top: 40%;
-	}
+    @include breakpoint(($breakpoint-desktop)){
+        top: 40%;
+    }
 }
 
 body.gameLoaded {
@@ -311,58 +312,58 @@ body.gameLoaded {
     #guiContainer, #offscreenIndicatorContainer{ opacity: 1}
 }
 body.gameActive{
-	.hud { opacity: 0.3;}
-	.hp-bar { opacity: 0.6;}
-	.status { opacity: 0.8;}
+    .hud { opacity: 0.3;}
+    .hp-bar { opacity: 0.6;}
+    .status { opacity: 0.8;}
     .buttonsContainer { opacity: 0.6;}
-	.offscreenIndicator{ opacity: 0.8}
-	h2{
-		opacity: 0;
-	}
+    .offscreenIndicator{ opacity: 0.8}
+    h2{
+        opacity: 0;
+    }
 
-	.pixiContainer:before{
-		opacity: 0;
-	}
+    .pixiContainer:before{
+        opacity: 0;
+    }
 
-	&.touch .fireButton{
-	}
+    &.touch .fireButton{
+    }
 }
 
 .disconnected{
-	#reconnect{
-		opacity: 1;
-		pointer-events: all;
-	}
+    #reconnect{
+        opacity: 1;
+        pointer-events: all;
+    }
 
-	#tryAgain, #joinGame{
-		opacity: 0;
-		pointer-events: none;
-	}
+    #tryAgain, #joinGame{
+        opacity: 0;
+        pointer-events: none;
+    }
 }
 
 /* HP Bar */
 .hp-bar {
-	top: 0px;
-	left: 0;
-	width: 20rem;
-	pointer-events: all;
+    top: 0px;
+    left: 0;
+    width: 20rem;
+    pointer-events: all;
     cursor: pointer;
 }
 
 .target-hp-bar {
-	top: 0px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 20rem;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20rem;
     .close {
-	    pointer-events: all;
+        pointer-events: all;
         cursor:pointer;
         position:absolute;
         top: 10px;
         right: 0px;
-		background-image: url(assets/images/close.png);
-		background-repeat: no-repeat;
-		background-position: top;
+        background-image: url(assets/images/close.png);
+        background-repeat: no-repeat;
+        background-position: top;
         background-size: auto;
         width: 20px;
         height: 20px;
@@ -372,14 +373,14 @@ body.gameActive{
 }
 .hp-bar, .target-hp-bar {
 
-	position: absolute;
-	font-size: 12px;
-	padding: 1rem;
-	color: #fff;
-	font-family: arial, sans-serif;
-	opacity: 0;
+    position: absolute;
+    font-size: 12px;
+    padding: 1rem;
+    color: #fff;
+    font-family: arial, sans-serif;
+    opacity: 0;
 
-	transition: all 0.5s ease-in;
+    transition: all 0.5s ease-in;
 
     .health-name {
         width: 100%;
