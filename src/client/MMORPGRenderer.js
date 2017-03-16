@@ -205,6 +205,15 @@ class MMORPGRenderer extends Renderer {
             if (this.playerCharacter.target) {
                 let playerTarget = this.gameEngine.world.objects[this.playerCharacter.target];
                 this.showTargetHeal(playerTarget);
+
+                if (playerTarget && playerTarget.health == 0 && !this.clearingTarget) {
+                    this.clearingTarget = true;
+                    setTimeout(()=> {
+                        this.playerCharacter.target = null;
+                        document.querySelector('.target-hp-bar').style.opacity = 0;
+                        this.clearingTarget = false;
+                    }, 1000);
+                }
             }
             this.playerCharacter.actor.showHeal();
         }
@@ -260,16 +269,14 @@ class MMORPGRenderer extends Renderer {
         var health = document.querySelector('#target-health');
         document.querySelector('.target-hp-bar .health-name').innerHTML = obj.actor.name;
         this.playerCharacter.target = obj.id;
+        this.playerCharacter.lookAt(obj.position);
         this.emit('target', {"id": obj.id});
     }
     showTargetHeal(target) {
-            var health = document.querySelector('#target-health');
+        var health = document.querySelector('#target-health');
         if (target) {
             var currentHealth = target.health * 100 / target.original_health;
             health.style.width = parseFloat(currentHealth) + '%';
-            if (target.health == 0) {
-                console.log('died!');
-            }
         } else {
             health.style.width = '0%';
             this.playerCharacter.target = null;

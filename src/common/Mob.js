@@ -140,7 +140,7 @@ class Mob extends DynamicObject {
     calc(position, target) {
         var d = this.distance(position, target);
         if (d < 1) {
-            console.log(d, 'Arrived');
+            //console.log(d, 'Arrived');
             return
         }
         var currentVelocity = this.currentVelocity || new TwoVector(0,0);
