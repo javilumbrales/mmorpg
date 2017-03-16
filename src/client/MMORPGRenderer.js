@@ -24,7 +24,6 @@ class MMORPGRenderer extends Renderer {
         super(gameEngine, clientEngine);
         this.meshes = {};
         this.isReady = false;
-        this.debugMode = true;
 
         // these define how many gameWorlds the player ship has "scrolled" through
         this.bgPhaseX = 0;

@@ -11,6 +11,8 @@ class MMORPGClientEngine extends ClientEngine {
     constructor(gameEngine, options, Renderer) {
         super(gameEngine, options, Renderer);
 
+        this.renderer.debugMode = options.debug;
+
         this.serializer.registerClass(require('../common/Character'));
         this.serializer.registerClass(require('../common/NPC'));
         this.serializer.registerClass(require('../common/Mob'));
