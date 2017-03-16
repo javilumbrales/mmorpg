@@ -12,6 +12,7 @@ class Mob extends DynamicObject {
         return Object.assign({
             height: { type: Serializer.TYPES.INT32 },
             health: { type: Serializer.TYPES.INT32 },
+            aggressive: { type: Serializer.TYPES.INT32 },
             animations: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
@@ -26,20 +27,22 @@ class Mob extends DynamicObject {
         super.syncTo(other);
         this.height = other.height;
         this.health = other.health;
+        this.aggressive = other.aggressive;
         this.animations = other.animations;
     }
 
-    constructor(id, gameEngine, position, velocity, height, kind) {
+    constructor(id, gameEngine, position, velocity, height, aggressive) {
         super(id, position, velocity);
         this.class = Mob;
-        this.height = height;
         this.gameEngine = gameEngine;
+        this.height = height;
+        this.aggressive = aggressive ? 1 : 0;
         this.health = this.original_health = 10;
         this.attack = 9;
         this.shield = this.original_shield = 5;
         this.animations = [];
-        this.maxDistanceToTarget = 18;
-        this.aggresiveRange = 1000;
+        this.maxDistanceToTarget = 10;
+        this.aggresiveRange = 800;
 
 
         this.running = {};
@@ -89,7 +92,7 @@ class Mob extends DynamicObject {
         return dx * dx + dy * dy;
     }
 
-    steer() {
+    getTarget() {
         let closestTarget = null;
         let closestDistance2 = Infinity;
         for (let objId of Object.keys(this.gameEngine.world.objects)) {
@@ -103,29 +106,71 @@ class Mob extends DynamicObject {
             }
         }
 
-        this.target = closestTarget;
-
         // Attack only if in range
-        if (this.target && closestDistance2 < this.aggresiveRange && closestDistance2 > this.maxDistanceToTarget) {
+        return closestDistance2 < this.aggresiveRange ?  closestTarget : null;
+    }
 
-            let newVX = this.shortestVector(this.position.x, this.target.position.x, this.gameEngine.worldSettings.width);
-            let newVY = this.shortestVector(this.position.y, this.target.position.y, this.gameEngine.worldSettings.height);
-            let angleToTarget = Math.atan2(newVX, newVY)/Math.PI* 180;
-            angleToTarget *= -1;
-            angleToTarget += 90; // game uses zero angle on the right, clockwise
-            if (angleToTarget < 0) angleToTarget += 360;
-            let turnRight = this.shortestVector(this.angle, angleToTarget, 360);
+    steer() {
 
-            if (turnRight > 4) {
-                this.isRotatingRight = true;
-            } else if (turnRight < -4) {
-                this.isRotatingLeft = true;
-            } else {
-                this.isAccelerating = true;
-            }
-
+        if (this.aggressive) {
+            this.target = this.target || this.getTarget();
         }
+
+        if (this.target) {
+
+            this.calc(this.position, this.target.position);
+        }
+    }
+    truncate(vector,  max) {
+        var i ;
+
+        i = max / vector.length();
+        i = i < 1.0 ? i : 1.0;
+
+        vector.multiplyScalar(i);
+        return vector;
+    }
+
+    distance(targeta, targetb) {
+        let dx = targeta.x - targetb.x;
+        let dy = targeta.y - targetb.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    calc(position, target) {
+        var d = this.distance(position, target);
+        if (d < 1) {
+            console.log(d, 'Arrived');
+            return
+        }
+        var currentVelocity = this.currentVelocity || new TwoVector(0,0);
+
+        let max_velocity = 1;
+        let max_force = 0.5;
+        let max_speed = 1;
+        let mass = 2;
+
+        let dvelocity = (new TwoVector(0,0)).copy(target).subtract(position);
+        dvelocity.normalize();
+        let desired_velocity = dvelocity.multiplyScalar(max_velocity);
+
+        let steering = desired_velocity.subtract(currentVelocity);
+
+        //console.log('p', position, 't', target, 'v', currentVelocity, 'dv', desired_velocity, 's', steering);
+
+        // Make sure doesn't go beyond the max_force
+        steering = this.truncate(steering, max_force);
+
+        // Objet mass should have an inpact
+        steering = steering.multiplyScalar(1/mass);
+
+        // Make sure it doesn't go faster than allowed
+        currentVelocity = this.truncate(currentVelocity.add(steering), max_speed);
+        position = position.add(currentVelocity);
+
+        //console.log('p', position, 'v', currentVelocity);
+        console.log("Mob position:", position, "Target position:", target);
     }
 }
 
-module.exports = Mob;
+    module.exports = Mob;

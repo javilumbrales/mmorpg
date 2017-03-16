@@ -8,9 +8,6 @@ class MobActor extends Actor {
 
         this.assetName = 'mob';
 
-        //TODO: Fix this
-        this.name ='Foo';
-
         //let mob = this.renderer.loader.assets['shirt'][0];
         let id = this.meshName + '-1';
         this.animatedObject = this.assembleMesh(id, this.renderer.loader.assets[this.assetName]);
@@ -90,6 +87,16 @@ class MobActor extends Actor {
         //}
         for (var i=0; i<mesh.skeletons.length; i++) {
             this.animatable = this.scene.beginAnimation(mesh.skeletons[i], animation.from, animation.to, true, speed);
+        }
+    }
+
+    setAggressive(value) {
+        //TODO: FIX THIS
+        let name = "Foo";
+        if (value) {
+            this.setName(name + " (Aggresive)");
+        } else {
+            this.setName(name);
         }
     }
 

@@ -31,36 +31,6 @@ class CharacterActor extends Actor {
     }
 
 
-    setName(name){
-        if (this.name) {
-            return;
-        }
-        var dynamicTexture = new BABYLON.DynamicTexture("DynamicTexture", 512, this.scene, true);
-        dynamicTexture.hasAlpha = true;
-        this.name = name;
-        var ctx =  dynamicTexture.getContext();
-        var font = "bold 52px verdana";
-        ctx.font= font;
-        var width = ctx.measureText(name).width;
-        dynamicTexture.drawText(name, 256 - width/2, 52, font, "lightblue", "red"); //write "" into the last parameter to hide the plate
-        dynamicTexture.uScale = 1;
-        dynamicTexture.vScale = 0.125;
-        dynamicTexture.update(false);
-
-        var result = BABYLON.Mesh.CreatePlane("nameplate", 10, this.scene, false);
-        result.position = new BABYLON.Vector3(0, 12.75, 0);
-        result.rotation.x = Math.PI;
-        result.scaling.y = 0.125;
-        result.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
-        var mat = new BABYLON.StandardMaterial("nameplateMat", this.scene);
-        mat.diffuseTexture = dynamicTexture;
-        mat.backFaceCulling = false;
-
-        result.material = mat;
-        result.parent = this.mesh;
-        this.nameText = result;
-        document.querySelector('.hp-bar .health-name').innerHTML = this.name;
-    }
 
     destroy() {
         super.destroy();
@@ -211,7 +181,10 @@ class CharacterActor extends Actor {
 
         }.bind(this), 20);
     }
-
+    setName(name) {
+        super.setName(name);
+        document.querySelector('.hp-bar .health-name').innerHTML = this.name;
+    }
 }
 
 module.exports = CharacterActor;

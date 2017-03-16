@@ -34,8 +34,8 @@ class MMORPGServerEngine extends ServerEngine {
 
         this.createNpc('Gandalf');
 
-        for (let i = 0; i < 20; i++) {
-            this.createMob('foo');
+        for (let i = 0; i < 10; i++) {
+            this.createMob('foo', Math.round(Math.random()));
         }
 
         this.gameEngine.on('killed', (e) => {
@@ -52,8 +52,8 @@ class MMORPGServerEngine extends ServerEngine {
         let npc = this.gameEngine.makeNpc(name);
     }
 
-    createMob(name) {
-        let npc = this.gameEngine.makeMob(name);
+    createMob(name, aggressive) {
+        let npc = this.gameEngine.makeMob(name, aggressive);
     }
 
     onPlayerConnected(socket) {

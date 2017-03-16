@@ -38,7 +38,7 @@ class MMORPGGameEngine extends GameEngine {
         });
 
         this.worldSettings = {
-            worldWrap: true,
+            worldWrap: false,
             width: 500,
             height: 500
         };
@@ -59,7 +59,7 @@ class MMORPGGameEngine extends GameEngine {
             let inputData = data.input, id;
             switch (inputData.input) {
                 case 'move':
-                    console.log("Player moving to", inputData);
+                    console.log("INPUT RECEIVED: Player moving to", inputData);
                     playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
                     playerCharacter.destination = new TwoVector(inputData.options.destination.x, inputData.options.destination.z);
                     break;
@@ -145,6 +145,11 @@ class MMORPGGameEngine extends GameEngine {
         if (distanceToTarget < a.maxDistanceToTarget) {
             let damage = (a.attack - t.shield);
             t.health -= damage;
+
+            // Defend from attack
+            if (t.class == Mob && !t.target) {
+                t.target = a;
+            }
             console.log('attacking target!', t.health, t.original_health);
             this.emit('attacking', { "msg": 'Attacking ' + t.name + ' damage done ' + damage});
             if (t.health <= 0) {
@@ -185,20 +190,12 @@ class MMORPGGameEngine extends GameEngine {
             // Change destination if th distance is increasing (should not)
             if (distance < this.Epsilon || distance > obj._lastDistance) {
                 // Set the minion position to the curent destination
-                obj.position = obj.destination;
+                obj.position.copy(obj.destination);
 
                 // Destination has been reached
                 obj.isMoving = false;
                 console.log('Arrived to destination!');
                 obj.destination = null;
-                if (!obj.destinations) {
-                    // Animate the character in idle animation
-                    // Call function when final destination is reached
-                }
-                else {
-                    obj.destination = obj.destinations.shift();
-                    this.moveToTarget(obj);
-                }
             }
             else {
                 obj._lastDistance = distance;
@@ -214,7 +211,7 @@ class MMORPGGameEngine extends GameEngine {
                 obj.position.x += delta.x;
                 obj.position.y += delta.y;
                 //obj.position.z += delta.z;
-                console.log('moved to', obj.x, obj.height, obj.y);
+                console.log('moved to:', obj.x, obj.height, obj.y, 'delta was:', delta);
             }
         }
     }
@@ -246,13 +243,13 @@ class MMORPGGameEngine extends GameEngine {
 
     }
 
-    makeMob(name) {
+    makeMob(name, aggressive) {
 
         console.log('makeMob', name);
         let cords = this.getRandCoords()
 
         // todo playerId should be called ownerId
-        let mob = new Mob(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y']);
+        let mob = new Mob(++this.world.idCount, this, new TwoVector(cords['x'], cords['z']), null, cords['y'], aggressive);
         mob.name = name;
         mob.attachAI();
         this.addObjectToWorld(mob);

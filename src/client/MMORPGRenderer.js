@@ -328,6 +328,7 @@ class MMORPGRenderer extends Renderer {
         } else if (objData.class == Mob) {
 
             let mobActor = new MobActor(this);
+            mobActor.setAggressive(objData.aggressive);
             mesh = mobActor.mesh;
             this.meshes[objData.id] = mesh;
             mesh.id = objData.id;
