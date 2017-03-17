@@ -34,7 +34,7 @@ class MMORPGServerEngine extends ServerEngine {
 
         this.createNpc('Gandalf');
 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 10; i++) {
             this.createMob('foo', Math.round(Math.random()));
         }
 

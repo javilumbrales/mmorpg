@@ -64,7 +64,7 @@ class Character extends DynamicObject {
         }
     }
 
-    get maxSpeed() { return 0.1; }
+    get maxSpeed() { return 0.3; }
 
     processSkills() {
         for(var a = 0; a <this.skills.length; a++) {
