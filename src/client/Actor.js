@@ -72,7 +72,7 @@ class  Actor{
                 moveVector = moveVector.normalize();
                 //moveVector = moveVector.scale(0.3);
                 let delta = moveVector.scale(this.maxSpeed);
-                console.log(moveVector, this.maxSpeed, delta);
+                //console.log(moveVector, this.maxSpeed, delta);
                 this.mesh.moveWithCollisions(delta);
             } else {
                 this.destination = null;
