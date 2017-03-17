@@ -234,9 +234,9 @@ class MMORPGRenderer extends Renderer {
                     if (objData && !this.clientEngine.isOwnedByPlayer(objData)) {
                         sprite.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                     } else if (objData) {
-                        this.debugCharacter.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
+                        this.debugCharacter && this.debugCharacter.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                         let a;
-                        while(a = objData.animations.shift()) {
+                        while(a = objData.skills.shift()) {
                             if (a == 2) {
                                 this.playerCharacter.actor.animateHeal();
                             } else if (a == 3) {
@@ -306,6 +306,7 @@ class MMORPGRenderer extends Renderer {
 
     createDebugObject(objData) {
             let characterActor = new CharacterActor(this, objData.kind);
+            characterActor.maxSpeed = objData.maxSpeed;
             let mesh = characterActor.mesh;
             mesh.id = objData.id;
             mesh.data = objData;
@@ -320,6 +321,7 @@ class MMORPGRenderer extends Renderer {
                 this.createDebugObject(objData);
             }
             let characterActor = new CharacterActor(this, objData.kind);
+            characterActor.maxSpeed = objData.maxSpeed;
             mesh = characterActor.mesh;
             this.meshes[objData.id] = mesh;
             mesh.id = objData.id;

@@ -10,10 +10,10 @@ require('../../assets/sass/main.scss');
 // is sent to both game engine and client engine
 const defaults = {
     traceLevel: 1000,
-    delayInputCount: 3,
+    delayInputCount: 4,
     clientIDSpace: 1000000,
     syncOptions: {
-        sync: qsOptions.sync || 'extrapolate',
+        sync: qsOptions.sync || 'interpolate',
         localObjBending: 0.6,
         remoteObjBending: 0.6
     }

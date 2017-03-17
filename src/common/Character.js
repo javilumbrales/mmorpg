@@ -13,7 +13,7 @@ class Character extends DynamicObject {
             health: { type: Serializer.TYPES.INT32 },
             shield: { type: Serializer.TYPES.INT32 },
             kind: { type: Serializer.TYPES.INT32 },
-            animations: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
+            skills: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
 
@@ -29,7 +29,7 @@ class Character extends DynamicObject {
         this.health = other.health;
         this.shield = other.shield;
         this.kind = other.kind;
-        this.animations = other.animations;
+        this.skills = other.skills;
     }
 
     constructor(id, gameEngine, position, velocity, height, kind) {
@@ -43,25 +43,19 @@ class Character extends DynamicObject {
         this.health = this.original_health = 100;
         this.shield = this.original_shield = 5;
         this.attack = 10;
-        this.animations = [];
+        this.skills = [];
         this.maxDistanceToTarget = 18;
 
-        this.skills = {
+        this.skillset = {
             '1':{'duration': 1, 'action': {'param': 'attack', 'act':10, 'deact':0}},
-            '2':{'duration': 100, 'action': {'param': 'health', 'act': 4, 'deact': 0}},
-            '3':{'duration': 1000, 'action': {'param': 'shield', 'act': 4, 'deact': -4}},
+            '2':{'duration': 100, 'coolDown': 1000, 'action': {'param': 'health', 'act': 4, 'deact': 0}},
+            '3':{'duration': 1000, 'coolDown': 10000, 'action': {'param': 'shield', 'act': 4, 'deact': -4}},
             '4':{'duration': 15, 'action': {'param': 'teleport', 'act':true, 'deact':false}},
         };
 
         this.running = {};
+        this.coolDown = {};
     };
-
-    applySkill(id, activate) {
-        let skill = this.skills[id]['action'];
-        console.log('applySkill before', this[skill['param']]);
-        this[skill['param']] = this[skill['param']] + (activate ? skill['act'] : skill['deact']);
-        console.log('applySkill after', this[skill['param']]);
-    }
 
     destroy() {
         if (this.onPreStep){
@@ -71,6 +65,46 @@ class Character extends DynamicObject {
     }
 
     get maxSpeed() { return 0.1; }
+
+    processSkills() {
+        for(var a = 0; a <this.skills.length; a++) {
+            this.running[this.skills[a]]--;
+            if (this.running[this.skills[a]] <=0) {
+                this.applySkill(this.skills[a], false);
+                delete this.running[this.skills[a]];
+                this.skills.splice(a, 1);
+            }
+        }
+    }
+    useSkill(id) {
+        this.skills.push(id);
+        this.running[id] = this.skillset[id]['duration'];
+    }
+
+    applySkill(id, activate) {
+        let skill = this.skillset[id]['action'];
+        console.log('applySkill before', this[skill['param']]);
+        this[skill['param']] = this[skill['param']] + (activate ? skill['act'] : skill['deact']);
+        console.log('applySkill after', this[skill['param']]);
+    }
+
+    gotoPlace(destination) {
+        console.log(`Moving player ${this.id}  from ${this.position} to: ${destination}`);
+        //this.moveToTarget(o);
+        let direction = (new TwoVector(0,0)).copy(destination).subtract(this.position);
+        //console.log('direction', direction);
+        direction.normalize();
+        let delta = direction.multiplyScalar(this.maxSpeed);
+        let distanceToTarget = Utils.distance(new TwoVector(this.x, this.y), new TwoVector(destination.x, destination.y));
+        console.log('direction', direction, 'delta', delta, 'distance to target', distanceToTarget);
+        if (distanceToTarget < 1) {
+            this.destination = null;
+            this.velocity.set(0,0);
+            console.log('Arrived to destination');
+        } else {
+            this.velocity.set(delta.x, delta.y);
+        }
+    }
 }
 
 module.exports = Character;

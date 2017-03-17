@@ -6,6 +6,7 @@ const Character = require('./Character');
 const NPC = require('./NPC');
 const Mob = require('./Mob');
 const Timer = require('./Timer');
+const Utils = require('./Utils');
 
 
 class MMORPGGameEngine extends GameEngine {
@@ -16,58 +17,34 @@ class MMORPGGameEngine extends GameEngine {
 
         this.timer = new Timer();
         this.timer.play();
-
-        this.on('server__postStep', ()=>{
-            this.timer.tick();
-            for (let objId of Object.keys(this.world.objects)) {
-                let o = this.world.objects[objId];
-                if (o.animations && o.animations.length) {
-                    for(var a = 0; a <o.animations.length; a++) {
-                        o.running[o.animations[a]]--;
-                        if (o.running[o.animations[a]] <=0) {
-                            o.applySkill(o.animations[a], false);
-                            delete o.running[o.animations[a]];
-                            o.animations.splice(a, 1);
-                        }
-                    }
-                }
-                if (o.destination) {
-                    console.log(`Moving player ${o.id}  from ${o.position} to: ${o.destination}`);
-                    //this.moveToTarget(o);
-                    let direction = (new TwoVector(0,0)).copy(o.destination).subtract(o.position);
-                    //console.log('direction', direction);
-                    direction.normalize();
-                    let delta = direction.multiplyScalar(o.maxSpeed);
-                    let distanceToTarget = this.distance(new TwoVector(o.x, o.y), new TwoVector(o.destination.x, o.destination.y));
-                    console.log('direction', direction, 'delta', delta, 'distance to target', distanceToTarget);
-                    if (distanceToTarget < 1) {
-                        o.destination = null;
-                        o.velocity.set(0,0);
-                        console.log('Arrived to destination');
-                    } else {
-                        o.velocity.set(delta.x, delta.y);
-                    }
-                } else if (o.class == Character) {
-                    console.log('character stay at position', o.position);
-                }
-            }
-        });
-
         this.worldSettings = {
             worldWrap: false,
             width: 500,
             height: 500
         };
         this.Epsilon = 0.1;
-        this.animations = {
+        this.skills = {
             'attack': 1,
             'heal': 2,
             'shield': 3,
             'teleport': 4
         };
 
-        this.on('server__inputReceived', (data)=>{
 
+        this.on('server__postStep', ()=>{
+            this.timer.tick();
+            for (let objId of Object.keys(this.world.objects)) {
+                let o = this.world.objects[objId];
+                if (o.skills && o.skills.length) {
+                    o.processSkills();
+                }
+                if (o.destination) {
+                    o.gotoPlace(o.destination);
+                }
+            }
+        });
+
+        this.on('server__inputReceived', (data)=>{
 
         let playerCharacter = this.getPlayerCharacter(data.playerId);
 
@@ -75,12 +52,12 @@ class MMORPGGameEngine extends GameEngine {
             let inputData = data.input, id;
             switch (inputData.input) {
                 case 'move':
-                    console.log("INPUT RECEIVED: Player moving to", inputData);
                     playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
                     playerCharacter.destination = new TwoVector(inputData.options.destination.x, inputData.options.destination.z);
                     break;
+
                 case 'attack':
-                    id = this.animations[inputData.input];
+                    id = this.skills[inputData.input];
                     if (playerCharacter.target && playerCharacter.id != playerCharacter.target) {
                         let attackTarget = this.world.objects[playerCharacter.target];
                         if (attackTarget) {
@@ -88,25 +65,25 @@ class MMORPGGameEngine extends GameEngine {
                         }
                     }
                     break;
+
                 case 'shield':
-                    id = this.animations[inputData.input];
-                    playerCharacter.animations.push(id);
+                    id = this.skills[inputData.input];
                     console.log('activating ' + inputData.input);
                     if (playerCharacter.shield == playerCharacter.original_shield) {
                         playerCharacter.applySkill(id, true);
                     }
-                    playerCharacter.running[id] = playerCharacter.skills[id]['duration'];
+                    playerCharacter.useSkill(id);
                     break;
+
                 case 'heal':
-                    id = this.animations[inputData.input];
-                    playerCharacter.animations.push(id);
+                    id = this.skills[inputData.input];
                     console.log('activating ' + inputData.input);
                     if (playerCharacter.health < playerCharacter.original_health) {
                         playerCharacter.applySkill(id, true);
                     }
-                    playerCharacter.running[id] = playerCharacter.skills[id]['duration'];
-                    console.log(playerCharacter.skills[id], playerCharacter.running[id]);
+                    playerCharacter.useSkill(id);
                     break;
+
                 case 'target':
                     console.log('new target', inputData.options);
                     playerCharacter.target = inputData.options.id;
@@ -116,22 +93,19 @@ class MMORPGGameEngine extends GameEngine {
                     console.log('teleporting player', inputData);
                     let telep = this.getPlayerCharacter(inputData.options.playerId);
                     if (telep) {
-                        id = this.animations[inputData.input];
+                        id = this.skills[inputData.input];
                         telep.position.x = inputData.options.destination.x;
                         telep.position.y = inputData.options.destination.z;
                         telep.height = inputData.options.destination.z;
-                        telep.animations.push(id);
-                        telep.running[id] = telep.skills[id]['duration'];
-                        console.log('found player animation started', telep.position, telep);
+                        playerCharacter.useSkill(id);
+                        console.log('Teleporting', telep.position, telep);
                     } else {
                         console.log(inputData.options['playerId'], ' not found');
                     }
-
                     break;
 
                 default:
                     console.log('uknown action', inputData.input);
-
             }
         }
         });
@@ -149,20 +123,18 @@ class MMORPGGameEngine extends GameEngine {
             //    that.emit('missileHit', { missile, character });
             //}
         });
-
-        //this.on('postStep', this.afterStep.bind(this));
     };
 
     attack(a, t) {
 
-        let distanceToTarget = this.distance(new TwoVector(a.x, a.y), new TwoVector(t.x, t.y));
+        let distanceToTarget = Utils.distance(new TwoVector(a.x, a.y), new TwoVector(t.x, t.y));
         console.log('Attacker position:', a.x, a.height, a.y);
         console.log('Target position:', t.x, t.height, t.y);
         if (distanceToTarget < a.maxDistanceToTarget) {
             let damage = (a.attack - t.shield);
             t.health -= damage;
 
-            // Defend from attack
+            // Mobs auto-defend from attack
             if (t.class == Mob && !t.target) {
                 t.target = a;
             }
@@ -191,18 +163,11 @@ class MMORPGGameEngine extends GameEngine {
         this.moveInDirecton(obj, direction);
     }
 
-
-    distance(targeta, targetb) {
-        let dx = targeta.x - targetb.x;
-        let dy = targeta.y - targetb.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
     moveInDirecton(obj, direction) {
         // If a destination has been set and the character has not been stopped
         if (obj.isMoving && obj.destination) {
             // Compute distance to destination
-            var distance = this.distance(new TwoVector(obj.x, obj.y), obj.destination);
+            var distance = Utils.distance(new TwoVector(obj.x, obj.y), obj.destination);
             // Change destination if th distance is increasing (should not)
             if (distance < this.Epsilon || distance > obj._lastDistance) {
                 // Set the minion position to the curent destination
@@ -261,7 +226,6 @@ class MMORPGGameEngine extends GameEngine {
 
     makeMob(name, aggressive) {
 
-        console.log('makeMob', name);
         let cords = this.getRandCoords()
 
         // todo playerId should be called ownerId
@@ -274,7 +238,6 @@ class MMORPGGameEngine extends GameEngine {
 
     makeNpc(name) {
 
-        console.log('makeNPC', name);
         let cords = this.getRandCoords()
 
         // todo playerId should be called ownerId

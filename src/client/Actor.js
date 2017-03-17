@@ -70,8 +70,10 @@ class  Actor{
             //console.log(distance);
             if (distance > this.Epsilon) {
                 moveVector = moveVector.normalize();
-                moveVector = moveVector.scale(0.3);
-                this.mesh.moveWithCollisions(moveVector);
+                //moveVector = moveVector.scale(0.3);
+                let delta = moveVector.scale(this.maxSpeed);
+                console.log(moveVector, this.maxSpeed, delta);
+                this.mesh.moveWithCollisions(delta);
             } else {
                 this.destination = null;
                 this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);

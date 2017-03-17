@@ -38,4 +38,10 @@ Utils.shortestArc = function(a, b) {
     return b-a+Math.PI*2;
 };
 
+Utils.distance = function(targeta, targetb) {
+    let dx = targeta.x - targetb.x;
+    let dy = targeta.y - targetb.y;
+    return Math.sqrt(dx * dx + dy * dy);
+};
+
 module.exports = Utils;
