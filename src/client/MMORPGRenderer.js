@@ -234,6 +234,7 @@ class MMORPGRenderer extends Renderer {
                     if (objData && !this.clientEngine.isOwnedByPlayer(objData)) {
                         sprite.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                     } else if (objData) {
+                        this.debugCharacter.actor.renderStep({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                         let a;
                         while(a = objData.animations.shift()) {
                             if (a == 2) {
@@ -303,10 +304,21 @@ class MMORPGRenderer extends Renderer {
         }
     }
 
+    createDebugObject(objData) {
+            let characterActor = new CharacterActor(this, objData.kind);
+            let mesh = characterActor.mesh;
+            mesh.id = objData.id;
+            mesh.data = objData;
+            this.debugCharacter = mesh;
+
+    }
     addObject(objData, options) {
         let mesh;
 
         if (objData.class == Character) {
+            if (this.debugMode && this.clientEngine.isOwnedByPlayer(objData)) {
+                this.createDebugObject(objData);
+            }
             let characterActor = new CharacterActor(this, objData.kind);
             mesh = characterActor.mesh;
             this.meshes[objData.id] = mesh;
@@ -314,7 +326,7 @@ class MMORPGRenderer extends Renderer {
             mesh.data = objData;
 
             if (this.clientEngine.isOwnedByPlayer(objData)) {
-                this.playerCharacter = mesh; // save reference to the player ship
+                this.playerCharacter = mesh; // save reference to the player character
                 // Center camera
                 this.camera.target.x = parseFloat(objData.position.x);
                 this.camera.target.z = parseFloat(objData.position.y);

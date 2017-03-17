@@ -45,10 +45,11 @@ class  Actor{
             }
             let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
 
-            //console.log('renderStep object at', delta);
+            console.log('renderStep object at', delta, ' from ', this.mesh.position);
 
             this.mesh.position = delta;
         } else {
+            console.log('Arrived to destination');
             if (this.isMoving) {
                 this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
                 this.isMoving = false;

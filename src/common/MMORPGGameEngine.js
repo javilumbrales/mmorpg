@@ -16,6 +16,7 @@ class MMORPGGameEngine extends GameEngine {
 
         this.timer = new Timer();
         this.timer.play();
+
         this.on('server__postStep', ()=>{
             this.timer.tick();
             for (let objId of Object.keys(this.world.objects)) {
@@ -32,7 +33,22 @@ class MMORPGGameEngine extends GameEngine {
                 }
                 if (o.destination) {
                     console.log(`Moving player ${o.id}  from ${o.position} to: ${o.destination}`);
-                    this.moveToTarget(o);
+                    //this.moveToTarget(o);
+                    let direction = (new TwoVector(0,0)).copy(o.destination).subtract(o.position);
+                    //console.log('direction', direction);
+                    direction.normalize();
+                    let delta = direction.multiplyScalar(o.maxSpeed);
+                    let distanceToTarget = this.distance(new TwoVector(o.x, o.y), new TwoVector(o.destination.x, o.destination.y));
+                    console.log('direction', direction, 'delta', delta, 'distance to target', distanceToTarget);
+                    if (distanceToTarget < 1) {
+                        o.destination = null;
+                        o.velocity.set(0,0);
+                        console.log('Arrived to destination');
+                    } else {
+                        o.velocity.set(delta.x, delta.y);
+                    }
+                } else if (o.class == Character) {
+                    console.log('character stay at position', o.position);
                 }
             }
         });
