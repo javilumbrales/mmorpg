@@ -69,10 +69,9 @@ class Mob extends DynamicObject {
 
         this.gameEngine.on('preStep', this.onPreStep);
 
-        let fireLoopTime = Math.round(250 + Math.random() * 100);
+        let fireLoopTime = Math.round(50 + Math.random() * 100);
         this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
             if (this.target && this.distanceToTargetSquared(this.target) < this.maxDistanceToTarget) {
-                this.isAccelerating = false;
                 console.log('Mob attacking target');
                 this.gameEngine.attack(this, this.target);
             }

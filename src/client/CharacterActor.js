@@ -34,11 +34,11 @@ class CharacterActor extends Actor {
 
     destroy() {
         super.destroy();
-
-        if (this.nameText) {
-            this.nameText.dispose();
+        return new Promise((resolve) =>{
+            this.nameText && this.nameText.dispose();
             this.nameText = null;
-        }
+            resolve();
+        });
     }
 
     animateShield() {
@@ -153,7 +153,7 @@ class CharacterActor extends Actor {
     }
 
     animateTeleport(destination) {
-        console.log('animateTeleport');
+        console.log('animateTeleport', destination);
 
         if(this.teleporting) {
             this.teleportInc +=5;
@@ -164,17 +164,14 @@ class CharacterActor extends Actor {
 
         BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.animatedObject[0], 'visibility', 30, 70, 1, 0.1, 0);
 
-        this.healAnimation = setInterval(function() {
+        this.teleportAnimation = setInterval(function() {
             if(this.teleportInc-- <= 0) {
 
                 console.log('stop animateTeleport', destination);
-                clearInterval(this.healAnimation);
-                this.mesh.position.x = 1;
-                //this.mesh.position.y = 0;
-                this.mesh.position.z = 1;
-                //this.mesh.position.x = destination.x;
-                //this.mesh.position.y = destination.y;
-                //this.mesh.position.z = destination.z;
+                clearInterval(this.teleportAnimation);
+                this.mesh.position.x = destination.x;
+                this.mesh.position.y = destination.y;
+                this.mesh.position.z = destination.z;
                 BABYLON.Animation.CreateAndStartAnimation("fadesphere", this.animatedObject[0], 'visibility', 30, 70, 0.1, 1, 0);
                 this.teleporting = null;
             }

@@ -12,7 +12,7 @@ class  Actor{
         this.mesh = BABYLON.MeshBuilder.CreateSphere(meshName, {diameter: 2, diameterY: 15}, this.scene);
         this.mesh.isPickable = true;
         this.mesh.visibility = this.renderer.debugMode ? 1 : 0;
-        this.mesh.position = new BABYLON.Vector3(-13, 1, -13);
+        this.mesh.position = new BABYLON.Vector3(-13, -1, -13);
         this.mesh.gravity = new BABYLON.Vector3(0, -9.81, 0);
         this.mesh.checkCollisions = true;
         this.mesh.collisionsEnabled = true;
@@ -27,11 +27,9 @@ class  Actor{
 
     destroy() {
         return new Promise((resolve) =>{
-            setTimeout(()=>{
-                this.mesh.dispose();
-                this.mesh = null;
-                resolve();
-            }, 1000);
+            this.mesh && this.mesh.dispose();
+            this.mesh = null;
+            resolve();
         });
     }
 
@@ -49,7 +47,6 @@ class  Actor{
 
             this.mesh.position = delta;
         } else {
-            console.log('Arrived to destination');
             if (this.isMoving) {
                 this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
                 this.isMoving = false;

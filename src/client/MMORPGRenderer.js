@@ -202,7 +202,7 @@ class MMORPGRenderer extends Renderer {
         if (this.playerCharacter) {
             this.centerCamera(this.playerCharacter.position);
             if (this.playerCharacter.target) {
-                let playerTarget = this.gameEngine.world.objects[this.playerCharacter.target];
+                let playerTarget = this.gameEngine.world.objects[this.playerCharacter.target.id];
                 this.showTargetHeal(playerTarget);
 
                 if (playerTarget && playerTarget.health == 0 && !this.clearingTarget) {
@@ -242,8 +242,8 @@ class MMORPGRenderer extends Renderer {
                             } else if (a == 3) {
                                 this.playerCharacter.actor.animateShield();
                             } else if (a == 4) {
-                                console.log(objData.position, objData);
-                                this.playerCharacter.actor.animateTeleport({"x":sprite.x, "y": sprite.y, "z": sprite.z});
+                                //console.log(objData.position, objData);
+                                //this.playerCharacter.actor.animateTeleport({"x":sprite.x, "y": sprite.y, "z": sprite.z});
                             }
                         }
                     }
@@ -268,7 +268,7 @@ class MMORPGRenderer extends Renderer {
         document.querySelector('.target-hp-bar').style.opacity = 0.7;
         var health = document.querySelector('#target-health');
         document.querySelector('.target-hp-bar .health-name').innerHTML = obj.actor.name;
-        this.playerCharacter.target = obj.id;
+        this.playerCharacter.target = obj;
         this.playerCharacter.lookAt(obj.position);
         this.emit('target', {"id": obj.id});
     }

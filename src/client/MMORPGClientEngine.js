@@ -24,10 +24,6 @@ class MMORPGClientEngine extends ClientEngine {
 
         super.start();
 
-        this.gameEngine.on('attacking', (data) => {
-            console.log('received attacking');
-            this.updateStatus({"status": 'standard', "message": data.msg});
-        });
         // handle gui for game condition
         this.gameEngine.on('objectDestroyed', (obj) => {
             if (obj.class == Character && this.isOwnedByPlayer(obj)) {
@@ -65,6 +61,7 @@ class MMORPGClientEngine extends ClientEngine {
             }
 
             this.renderer.on('attack', () => {
+                this.renderer.playerCharacter.lookAt(this.renderer.playerCharacter.target.position);
                 this.sendInput('attack');
             });
             this.renderer.on('shield', () => {
@@ -90,6 +87,18 @@ class MMORPGClientEngine extends ClientEngine {
     // extend ClientEngine connect to add own events
     connect() {
         return super.connect().then(() => {
+            this.socket.on('attacking', (data) => {
+                console.log('received attacking');
+                this.renderer.updateStatus({"status": 'standard', "message": data.msg});
+            });
+            this.socket.on('teleporting', (data) => {
+                console.log('received teleporting', data);
+                if (data.playerId == this.renderer.playerCharacter.data.playerId) {
+                    console.log('received teleporting');
+                    this.renderer.playerCharacter.actor.animateTeleport(data.destination);
+
+                }
+            });
             this.socket.on('statusUpdate', (e) => {
                 this.renderer.updateStatus(e);
             });

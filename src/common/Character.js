@@ -12,7 +12,7 @@ class Character extends DynamicObject {
             height: { type: Serializer.TYPES.INT32 },
             health: { type: Serializer.TYPES.INT32 },
             shield: { type: Serializer.TYPES.INT32 },
-            kind: { type: Serializer.TYPES.INT32 },
+            kind:   { type: Serializer.TYPES.INT32 },
             skills: { type: Serializer.TYPES.LIST, itemType: Serializer.TYPES.INT32 },
         }, super.netScheme);
     }
@@ -30,6 +30,11 @@ class Character extends DynamicObject {
         this.shield = other.shield;
         this.kind = other.kind;
         this.skills = other.skills;
+        console.log('syncTo', this.skills);
+    }
+    interpolate(nextObj, playPercentage, worldSettings) {
+        super.interpolate(nextObj, playPercentage, worldSettings);
+        this.skills = nextObj.skills;
     }
 
     constructor(id, gameEngine, position, velocity, height, kind) {
@@ -47,10 +52,10 @@ class Character extends DynamicObject {
         this.maxDistanceToTarget = 18;
 
         this.skillset = {
-            '1':{'duration': 1, 'action': {'param': 'attack', 'act':10, 'deact':0}},
-            '2':{'duration': 100, 'coolDown': 1000, 'action': {'param': 'health', 'act': 4, 'deact': 0}},
-            '3':{'duration': 1000, 'coolDown': 10000, 'action': {'param': 'shield', 'act': 4, 'deact': -4}},
-            '4':{'duration': 15, 'action': {'param': 'teleport', 'act':true, 'deact':false}},
+            '1':{'duration': 1, 'action': {'applicable': false, 'param': 'attack', 'act':10, 'deact':0}},
+            '2':{'duration': 100, 'coolDown': 1000, 'action': {'applicable': true, 'param': 'health', 'act': 4, 'deact': 0}},
+            '3':{'duration': 1000, 'coolDown': 10000, 'action': {'applicable': true, 'param': 'shield', 'act': 4, 'deact': -4}},
+            '4':{'duration': 15, 'action': {'applicable': false, 'param': 'teleport', 'act':true, 'deact': false}},
         };
 
         this.running = {};
@@ -68,6 +73,7 @@ class Character extends DynamicObject {
 
     processSkills() {
         for(var a = 0; a <this.skills.length; a++) {
+            console.log(this.skills, this.running);
             this.running[this.skills[a]]--;
             if (this.running[this.skills[a]] <=0) {
                 this.applySkill(this.skills[a], false);
@@ -77,12 +83,17 @@ class Character extends DynamicObject {
         }
     }
     useSkill(id) {
-        this.skills.push(id);
+        if(this.skills.indexOf(id) === -1) {
+            this.skills.push(id);
+        }
         this.running[id] = this.skillset[id]['duration'];
     }
 
     applySkill(id, activate) {
         let skill = this.skillset[id]['action'];
+        if (!skill.applicable) {
+            return;
+        }
         console.log('applySkill before', this[skill['param']]);
         this[skill['param']] = this[skill['param']] + (activate ? skill['act'] : skill['deact']);
         console.log('applySkill after', this[skill['param']]);

@@ -38,6 +38,12 @@ class MMORPGServerEngine extends ServerEngine {
             this.createMob('foo', Math.round(Math.random()));
         }
 
+        this.gameEngine.on('attacking', (e) => {
+                this.io.sockets.emit('attacking', e);
+        });
+        this.gameEngine.on('teleporting', (e) => {
+                this.io.sockets.emit('teleporting', e);
+        });
         this.gameEngine.on('killed', (e) => {
 
             console.log(`player killed: ${e.object.toString()}`);
@@ -81,6 +87,7 @@ class MMORPGServerEngine extends ServerEngine {
         for (let objId of Object.keys(this.gameEngine.world.objects)) {
             let obj = this.gameEngine.world.objects[objId];
             if (obj.playerId == playerId) {
+                console.log('deleting', obj.id);
                 delete this.gameEngine.world.objects[objId];
             }
         }

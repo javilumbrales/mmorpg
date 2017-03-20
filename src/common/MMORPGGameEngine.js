@@ -94,11 +94,14 @@ class MMORPGGameEngine extends GameEngine {
                     let telep = this.getPlayerCharacter(inputData.options.playerId);
                     if (telep) {
                         id = this.skills[inputData.input];
-                        telep.position.x = inputData.options.destination.x;
-                        telep.position.y = inputData.options.destination.z;
-                        telep.height = inputData.options.destination.z;
-                        playerCharacter.useSkill(id);
-                        console.log('Teleporting', telep.position, telep);
+                        telep.teleport = inputData.options.destination;
+                        telep.useSkill(id);
+                        telep.position = new TwoVector(telep.teleport.x, telep.teleport.z);
+                        telep.height = telep.teleport.y;
+                        console.log('Teleporting player to ', telep.position, telep.height);
+                        this.emit('teleporting', {"playerId": telep.playerId, "destination": telep.teleport});
+                        console.log('teleporting', { "playerId": telep.playerId, "destination": telep.teleport});
+                        telep.teleport = null;
                     } else {
                         console.log(inputData.options['playerId'], ' not found');
                     }
@@ -127,6 +130,12 @@ class MMORPGGameEngine extends GameEngine {
 
     attack(a, t) {
 
+        t = this.world.objects[t.id];
+        if (!t) {
+            console.log('Attempting to attack a non existing object, unsetting target');
+            a.target = null;
+            return;
+        }
         let distanceToTarget = Utils.distance(new TwoVector(a.x, a.y), new TwoVector(t.x, t.y));
         console.log('Attacker position:', a.x, a.height, a.y);
         console.log('Target position:', t.x, t.height, t.y);
@@ -140,8 +149,9 @@ class MMORPGGameEngine extends GameEngine {
             }
             console.log('attacking target!', t.health, t.original_health);
             this.emit('attacking', { "msg": 'Attacking ' + t.name + ' damage done ' + damage});
-            if (t.health <= 0) {
+            if (t.health <= 0 && !t.killed) {
                 a.target = null;
+                t.killed = true;
                 setTimeout((evt)=> {
                     this.emit('killed', { "object": t });
                 }, 1000);
