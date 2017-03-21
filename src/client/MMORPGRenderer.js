@@ -65,6 +65,7 @@ class MMORPGRenderer extends Renderer {
 
             // Create scene
             this.scene = new BABYLON.Scene(this.engine);
+            this.scene.gravity = new BABYLON.Vector3(0, -9.81, 0);
             this.scene.collisionsEnabled = true;
 
             this.loader = new RenderLoader(this.engine, this.scene, readyCallback);
@@ -85,7 +86,7 @@ class MMORPGRenderer extends Renderer {
             });
         }
         document.querySelector('#cancel-target').addEventListener('click', (e) => {
-            this.playerCharacter.target = null;
+            this.clearTarget();
             document.querySelector('.target-hp-bar').style.opacity = 0;
         });
 
@@ -117,28 +118,31 @@ class MMORPGRenderer extends Renderer {
         light0.groundColor = new BABYLON.Color3(0, 0, 0);
 
         //Terrain texture
-        var extraGround = BABYLON.Mesh.CreateGround("extraGround", this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 1, this.scene, false);
+        var extraGround = BABYLON.Mesh.CreateGround("extraGround", this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 2, this.scene, false);
         var extraGroundMaterial = new BABYLON.StandardMaterial("extraGround", this.scene);
         extraGroundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/ground.jpg", this.scene);
         extraGroundMaterial.diffuseTexture.uScale = 60;
         extraGroundMaterial.diffuseTexture.vScale = 60;
         extraGround.position.y = -1;
         extraGround.material = extraGroundMaterial;
-        extraGround.checkCollisions = true;
         extraGround.receiveShadows = true;
+        extraGround.checkCollisions = true;
 
-        //Ground
+        //Ground 2
         //var ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", 'assets/images/heightMap.png', 100, 100, 40, 0, 10, this.scene, false, null );
+        var ground2 = BABYLON.Mesh.CreateGround("extraGround", this.gameEngine.worldSettings.width, this.gameEngine.worldSettings.height, 1, this.scene, false);
         var groundMaterial = new BABYLON.StandardMaterial("ground", this.scene);
-        groundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/ground.jpg", this.scene);
+        groundMaterial.diffuseTexture = new BABYLON.Texture("assets/images/greyground.jpg", this.scene);
         groundMaterial.diffuseTexture.uScale = 6;
         groundMaterial.diffuseTexture.vScale = 6;
         groundMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
 
-        //ground.position.y = -1.0;
-        //ground.material = groundMaterial;
-        groundMaterial.checkCollisions = true;
-        //ground.checkCollisions = true;
+        ground2.material = groundMaterial;
+        ground2.position.x = this.gameEngine.worldSettings.width + 20;
+        ground2.position.y = -1;
+        //ground2.position.z = this.gameEngine.worldSettings.height;
+
+        ground2.checkCollisions = true;
 
         // Fog
         //this.scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
@@ -174,8 +178,39 @@ class MMORPGRenderer extends Renderer {
         BABYLON.Animation.CreateAndStartAnimation('camera.beta', this.scene.activeCamera, 'beta', 60, time, 1.18 * 2, 1.20, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, easing);
         BABYLON.Animation.CreateAndStartAnimation('camera.radius', this.scene.activeCamera, 'radius', 60, time, 800, 50, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT, easing);
 
+        // Target selection
+        var selectTexture = new BABYLON.DynamicTexture("selectTexture", 512, this.scene, true);
+        var context = selectTexture._context;
+        var invertY = true;
+        var size = selectTexture.getSize();
+
+        var posX = 256;
+        var posY = 256;
+        var radius = 220;
+        context.arc(posX, posY, radius, 0, 2 * Math.PI, false);
+        context.fillStyle = 'rgba(0, 100, 0, 0.5)';
+        context.fill();
+        context.lineWidth = 30;
+        context.strokeStyle = 'rgb(0, 255, 0)';;
+        context.setLineDash([60, 55]);
+        context.stroke();
+        selectTexture.update(invertY);
+
+        this.selectMaterial = new BABYLON.StandardMaterial('selectedBoxMaterial', this.scene);
+        this.selectMaterial.emissiveTexture = selectTexture;
+        this.selectMaterial.diffuseTexture = selectTexture;
+        this.selectMaterial.opacityTexture = selectTexture;
+
+
 
         this.isReady = true;
+
+        this.scene.registerBeforeRender(()=> {
+            var rotationSpeed = 0.005;
+            this.selectMaterial.diffuseTexture.wAng += rotationSpeed;
+            this.selectMaterial.emissiveTexture.wAng += rotationSpeed;
+            this.selectMaterial.opacityTexture.wAng += rotationSpeed;
+        });
         //initGame();
 
     }
@@ -265,13 +300,26 @@ class MMORPGRenderer extends Renderer {
     }
 
     setTarget(obj) {
+        this.clearTarget();
         document.querySelector('.target-hp-bar').style.opacity = 0.7;
         var health = document.querySelector('#target-health');
         document.querySelector('.target-hp-bar .health-name').innerHTML = obj.actor.name;
-        this.playerCharacter.target = obj;
-        this.playerCharacter.lookAt(obj.position);
+        this.playerCharacter.actor.lookTo(obj.position);
         this.emit('target', {"id": obj.id});
+
+        obj.selectionCircle = new BABYLON.Mesh.CreateGround('select', 3, 3, 1, this.scene);
+        obj.selectionCircle.parent = obj;
+        obj.selectionCircle.material = this.selectMaterial;
+        obj.selectionCircle.material.zOffset = -3;
+        obj.selectionCircle.position.y = -3;
+        this.playerCharacter.target = obj;
     }
+
+    clearTarget() {
+        this.playerCharacter.target &&  this.playerCharacter.target.selectionCircle && this.playerCharacter.target.selectionCircle.dispose();
+        this.playerCharacter.target = null;
+    }
+
     showTargetHeal(target) {
         var health = document.querySelector('#target-health');
         if (target) {
@@ -279,7 +327,7 @@ class MMORPGRenderer extends Renderer {
             health.style.width = parseFloat(currentHealth) + '%';
         } else {
             health.style.width = '0%';
-            this.playerCharacter.target = null;
+            this.clearTarget();
             console.log('target not found, probably killed');
         }
     }
@@ -349,6 +397,7 @@ class MMORPGRenderer extends Renderer {
 
             let mobActor = new MobActor(this);
             mobActor.setAggressive(objData.aggressive);
+            mobActor.maxSpeed = objData.maxSpeed;
             mesh = mobActor.mesh;
             this.meshes[objData.id] = mesh;
             mesh.id = objData.id;
@@ -361,7 +410,7 @@ class MMORPGRenderer extends Renderer {
             mesh.id = objData.id;
             mesh.data = objData;
         }
-        mesh.position = new BABYLON.Vector3(objData.x,objData.height, objData.y);
+        mesh.position = new BABYLON.Vector3(objData.x, objData.height, objData.y);
         console.log('object added on', mesh.position);
 
         Object.assign(mesh, options);
@@ -409,13 +458,6 @@ class MMORPGRenderer extends Renderer {
         statusEl.innerHTML = data['message'];
         statusContainer.appendChild(statusEl);
         statusContainer.scrollTop = statusContainer.scrollHeight;
-    }
-
-    onMouseClick(destination){
-        if (this.playerCharacter) {
-            this.playerCharacter.actor.addDestination(destination);
-            this.playerCharacter.actor.moveToNextDestination();
-        }
     }
 
     enableFullScreen(){

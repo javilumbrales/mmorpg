@@ -17,8 +17,9 @@ class CharacterActor extends Actor {
         player.scaling = this.kind ? new BABYLON.Vector3(0.035, 0.035, 0.035) :  new BABYLON.Vector3(2, 2, 2);
         player.isVisible = true;
         player.isPickable = false;
-        //player.position.y = -1;
         player.parent = this.mesh;
+        // By default it would be in the middle of the parent, to display it at ground level, substract half of parent's height
+        player.position.y = -3.5;
 
         this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
 

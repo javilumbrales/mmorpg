@@ -19,8 +19,8 @@ class NPCActor extends Actor {
         npc.scaling = new BABYLON.Vector3(0.035, 0.035, 0.035);
         npc.isPickable = false;
         npc.isVisible = true;
-        npc.position.y = -1;
         npc.parent = this.mesh;
+        npc.position.y = -3;
     }
 
     destroy(){
@@ -58,8 +58,7 @@ class NPCActor extends Actor {
 
         link.appendChild(a);
         link.addEventListener("click", (evt)=> {
-            console.log('teleporting!', {"playerId": playerId, "destination": {'x': 1, 'y': 0, 'z': 1}});
-            this.renderer.emit('teleport', {"playerId": playerId, "destination": {'x': 1, 'y': 0, 'z': 1}});
+            this.renderer.emit('teleport', {"playerId": playerId, "destination": {'x': this.gameEngine.worldSettings.width + 100, 'y': 2, 'z': 100}});
         });
         msg.appendChild(link);
 

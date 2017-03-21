@@ -61,7 +61,7 @@ class MMORPGClientEngine extends ClientEngine {
             }
 
             this.renderer.on('attack', () => {
-                this.renderer.playerCharacter.lookAt(this.renderer.playerCharacter.target.position);
+                this.renderer.playerCharacter.actor.lookTo(this.renderer.playerCharacter.target.position);
                 this.sendInput('attack');
             });
             this.renderer.on('shield', () => {

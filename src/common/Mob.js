@@ -146,8 +146,8 @@ class Mob extends DynamicObject {
 
         let max_velocity = 1;
         let max_force = 0.5;
-        let max_speed = 1;
-        let mass = 2;
+        let max_speed = this.maxSpeed;
+        let mass = 1;
 
         let dvelocity = (new TwoVector(0,0)).copy(target).subtract(position);
         dvelocity.normalize();

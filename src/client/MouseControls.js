@@ -35,22 +35,10 @@ class MouseControls{
             //console.log(mesh);
             return mesh.name == 'extraGround';
         });
-        //if (this.renderer.playerCharacter && pickResult.hit) {
-            //var targetPoint = pickResult.pickedPoint.clone();
-            //this.renderer.cursor.position = targetPoint.clone();
-            //targetPoint.y = this.renderer.playerCharacter.position.y;
-            //this.renderer.playerCharacter.lookAt(targetPoint);
-        //}
-
-        var pickResult = this.renderer.scene.pick(this.renderer.scene.pointerX, this.renderer.scene.pointerY, function (mesh) {
-            return mesh.isPickable && mesh.isEnabled() && (mesh.name == 'player' || mesh.name =='npc' || mesh.name == 'mob');
-        });
-
-            if (pickResult.hit) {
-                document.body.style.cursor = "pointer";
-            } else {
-                document.body.style.cursor = "default";
-            }
+        if (this.renderer.playerCharacter && pickResult.hit) {
+            var targetPoint = pickResult.pickedPoint.clone();
+            this.renderer.cursor.position = targetPoint.clone();
+        }
     }
 
     mouseClick(e) {
@@ -69,13 +57,9 @@ class MouseControls{
                 this.renderer.setTarget(pickResult.pickedMesh);
             }
 
-            // TODO: Fix this to be able to take stairs and so on
-            pickResult.pickedPoint.y = 0;
-
             this.destinations.push(pickResult.pickedPoint);
             this.renderer.playerCharacter.actor.destination = pickResult.pickedPoint;
-            this.renderer.playerCharacter.lookAt(pickResult.pickedPoint);
-
+            this.renderer.playerCharacter.actor.lookTo(pickResult.pickedPoint);
         }
     }
 }

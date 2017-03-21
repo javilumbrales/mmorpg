@@ -108,7 +108,7 @@ class Character extends DynamicObject {
         let delta = direction.multiplyScalar(this.maxSpeed);
         let distanceToTarget = Utils.distance(new TwoVector(this.x, this.y), new TwoVector(destination.x, destination.y));
         console.log('direction', direction, 'delta', delta, 'distance to target', distanceToTarget);
-        if (distanceToTarget < 1) {
+        if (distanceToTarget < 2) {
             this.destination = null;
             this.velocity.set(0,0);
             console.log('Arrived to destination');

@@ -15,6 +15,7 @@ class MobActor extends Actor {
         //mob.scaling = new BABYLON.Vector3(0.035, 0.035, 0.035);
         //mob.position.y = -1;
         this.animatedObject.parent = this.mesh;
+        this.animatedObject.position.y = -3;
         this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
     }
 
@@ -25,18 +26,17 @@ class MobActor extends Actor {
         //var mob = new BABYLON.MeshBuilder.CreateBox(name, {height: 20}, this.scene);
         //var mob = BABYLON.Mesh.CreateSphere("red", 4, 8, this.scene);
         //var mob = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, diameterY: 15}, this.scene);
-        mob.size = 10;
         mob.skeletons = [];
 
         for (var i=0; i<meshes.length; i++ ){
 
-            var newmesh = meshes[i].createInstance(meshes[i].name);
+            var newmesh = meshes[i].clone(meshes[i].name + i);
             newmesh.isPickable = false;
             newmesh.scaling = new BABYLON.Vector3(0.35, 0.35, 0.35);
 
             // Clone animations if any
             if (meshes[i].skeleton) {
-                //newmesh.skeleton = meshes[i].skeleton.clone();
+                newmesh.skeleton = meshes[i].skeleton.clone();
                 mob.skeletons.push(newmesh.skeleton);
             }
             newmesh.parent = mob;

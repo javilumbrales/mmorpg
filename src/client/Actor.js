@@ -2,22 +2,27 @@ const BABYLON = require("babylonjs");
 
 class  Actor{
     constructor(renderer, meshName) {
-        this.Epsilon = 1;
+        this.Epsilon = 4; // 3 diff on Y-AXIS + 1 margin
         this.renderer = renderer;
         this.scene = renderer.scene;
         this.gameEngine = renderer.gameEngine;
         this.camera = renderer.camera;
         this.meshName = meshName;
 
-        this.mesh = BABYLON.MeshBuilder.CreateSphere(meshName, {diameter: 2, diameterY: 15}, this.scene);
+        //this.mesh = BABYLON.MeshBuilder.CreateSphere(meshName, {diameter: 4, diameterY: 7}, this.scene);
+        this.mesh = BABYLON.MeshBuilder.CreateBox(meshName, {depth: 3, width: 3, height: 7}, this.scene);
         this.mesh.isPickable = true;
         this.mesh.visibility = this.renderer.debugMode ? 1 : 0;
-        this.mesh.position = new BABYLON.Vector3(-13, -1, -13);
-        this.mesh.gravity = new BABYLON.Vector3(0, -9.81, 0);
+
+        //this.mesh.position = new BABYLON.Vector3(-13, -1, -13);
         this.mesh.checkCollisions = true;
-        this.mesh.collisionsEnabled = true;
-        this.mesh.ellipsoid = new BABYLON.Vector3(0.5, 1.0, 0.5);
-        this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, 1.0, 0);
+
+
+
+        // TODO: Understand this better, params are the radius should be half of diameter of parent
+        this.mesh.ellipsoid = new BABYLON.Vector3(1, 1.5, 1);
+        //this.mesh.ellipsoidOffset = new BABYLON.Vector3(0, -1.0, 0);
+
         //keep a reference to the actor from the mesh
         this.mesh.actor = this;
 
@@ -27,6 +32,7 @@ class  Actor{
 
     destroy() {
         return new Promise((resolve) =>{
+            this.mesh && this.mesh.selectionCircle && this.mesh.selectionCircle.dispose();
             this.mesh && this.mesh.dispose();
             this.mesh = null;
             resolve();
@@ -34,18 +40,23 @@ class  Actor{
     }
 
     renderStep(position) {
-        if (Math.round(position.x) !== Math.round(this.mesh.position.x) || Math.round(position.y) != Math.round(this.mesh.position.y) || Math.round(position.z) != Math.round(this.mesh.position.z)) {
+        var moveVector = new BABYLON.Vector3(position.x, position.y, position.z).subtract(this.mesh.position);
+        var distance = moveVector.length();
+
+        if (distance > this.Epsilon) {
+            console.log('renderStep', distance);
 
             if (!this.isMoving){
-                this.lookAt(new BABYLON.Vector3(position.x, position.y, position.z));
                 this.playAnimation(this.animatedObject, this.assetName, 'walk', true, 1);
                 this.isMoving = true;
             }
-            let delta = new BABYLON.Vector3(position.x, this.mesh.position.y, position.z);
+            let velocityAndGravity = moveVector.add(new BABYLON.Vector3(0, -9.81, 0));
+            velocityAndGravity.normalize();
 
-            console.log('renderStep object at', delta, ' from ', this.mesh.position);
+            let delta = velocityAndGravity.scale(this.maxSpeed);
+            this.lookTo(new BABYLON.Vector3(position.x, position.y, position.z));
 
-            this.mesh.position = delta;
+            this.mesh.moveWithCollisions(delta);
         } else {
             if (this.isMoving) {
                 this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
@@ -68,9 +79,13 @@ class  Actor{
             if (distance > this.Epsilon) {
                 moveVector = moveVector.normalize();
                 //moveVector = moveVector.scale(0.3);
-                let delta = moveVector.scale(this.maxSpeed);
-                //console.log(moveVector, this.maxSpeed, delta);
+                let velocityAndGravity = moveVector.add(new BABYLON.Vector3(0, -9.81, 0));
+                let delta = velocityAndGravity.scale(this.maxSpeed);
+
+
+                //console.log(moveVector, this.maxSpeed, delta, velocityAndGravity);
                 this.mesh.moveWithCollisions(delta);
+                console.log('moveToDestination', this.mesh.position, this.destination, distance, delta);
             } else {
                 this.destination = null;
                 this.playAnimation(this.animatedObject, this.assetName, 'idle', true, 1);
@@ -82,7 +97,7 @@ class  Actor{
     /**
      * The character looks at the given position, but rotates only along Y-axis
      * */
-    lookAt(value){
+    lookTo(value){
         var dv = value.subtract(this.mesh.position);
         var yaw = -Math.atan2(dv.z, dv.x) - Math.PI / 2;
         this.mesh.rotation.y = yaw ;

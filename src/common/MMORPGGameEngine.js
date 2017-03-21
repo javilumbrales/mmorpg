@@ -52,8 +52,8 @@ class MMORPGGameEngine extends GameEngine {
             let inputData = data.input, id;
             switch (inputData.input) {
                 case 'move':
-                    playerCharacter._lastDistance = Number.POSITIVE_INFINITY;
                     playerCharacter.destination = new TwoVector(inputData.options.destination.x, inputData.options.destination.z);
+                    playerCharacter.height = inputData.options.destination.y;
                     break;
 
                 case 'attack':
@@ -162,51 +162,6 @@ class MMORPGGameEngine extends GameEngine {
         }
     }
 
-    moveToTarget(obj) {
-        obj.isMoving = true;
-        // Compute direction
-        //console.log('moveToTarget from:', obj.position, 'to', obj.destination);
-        let direction = (new TwoVector(0,0)).copy(obj.destination).subtract(obj.position);
-        //console.log('direction', direction);
-        direction.normalize();
-        //console.log('direction normalized', direction);
-        this.moveInDirecton(obj, direction);
-    }
-
-    moveInDirecton(obj, direction) {
-        // If a destination has been set and the character has not been stopped
-        if (obj.isMoving && obj.destination) {
-            // Compute distance to destination
-            var distance = Utils.distance(new TwoVector(obj.x, obj.y), obj.destination);
-            // Change destination if th distance is increasing (should not)
-            if (distance < this.Epsilon || distance > obj._lastDistance) {
-                // Set the minion position to the curent destination
-                obj.position.copy(obj.destination);
-
-                // Destination has been reached
-                obj.isMoving = false;
-                console.log('Arrived to destination!');
-                obj.destination = null;
-            }
-            else {
-                obj._lastDistance = distance;
-                // Add direction to the position
-                let delta = direction.multiplyScalar(obj.maxSpeed);
-                //obj.mesh.position.addInPlace(delta);
-                //console.log('gameengine:', direction, distance, delta);
-
-                //let velocityAndGravity = delta.add(new BABYLON.Vector3(0, -9, 0));
-
-                //console.log(velocityAndGravity);
-                //obj.mesh.moveWithCollisions(velocityAndGravity);
-                obj.position.x += delta.x;
-                obj.position.y += delta.y;
-                //obj.position.z += delta.z;
-                console.log('moved to:', obj.x, obj.height, obj.y, 'delta was:', delta);
-            }
-        }
-    }
-
     getPlayerCharacter(playerId) {
         let playerCharacter;
         for (let objId in this.world.objects) {
@@ -225,10 +180,10 @@ class MMORPGGameEngine extends GameEngine {
     };
 
     getRandCoords() {
-
+        //y: 2 (ground = -1, height of mesh / 2 = 3.5. need to assign the middle so that it isn't rendered under/above the ground
         return {
             "x": Math.floor(Math.random()*(this.worldSettings.width-200) / 2),
-            "y": 0,
+            "y": 2,
             "z": Math.floor(Math.random()*(this.worldSettings.height-200) / 2)
         };
 
